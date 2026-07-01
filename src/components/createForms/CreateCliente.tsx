@@ -87,37 +87,37 @@ useEffect(() => {
 
       <FormRow>
         <Label htmlFor="cliente">Cliente:</Label>
-        <Input type="text" id="cliente" $error={!!errors.cliente} {...register("cliente")} />
+        <Input type="text" id="cliente" enterKeyHint="next" $error={!!errors.cliente} {...register("cliente")} />
         {errors.cliente && <ErrorMessage>⚠ {errors.cliente.message}</ErrorMessage>}
       </FormRow>
 
       <FormRow>
         <Label htmlFor="cpfcnpj">CPF/CNPJ:</Label>
-        <Input type="text" id="cpfcnpj" $error={!!errors.cpfcnpj} {...register("cpfcnpj")} />
+        <Input type="text" id="cpfcnpj" inputMode="numeric" enterKeyHint="next" $error={!!errors.cpfcnpj} {...register("cpfcnpj")} />
         {errors.cpfcnpj && <ErrorMessage>⚠ {errors.cpfcnpj.message}</ErrorMessage>}
       </FormRow>
 
       <FormRow>
         <Label htmlFor="oficina">Oficina:</Label>
-        <Input type="text" id="oficina" $error={!!errors.oficina} {...register("oficina")} />
+        <Input type="text" id="oficina" enterKeyHint="next" $error={!!errors.oficina} {...register("oficina")} />
         {errors.oficina && <ErrorMessage>⚠ {errors.oficina.message}</ErrorMessage>}
       </FormRow>
 
       <FormRow>
         <Label htmlFor="telefone1">Telefone 1:</Label>
-        <Input type="text" id="telefone1" $error={!!errors.telefone1} {...register("telefone1")} />
+        <Input type="tel" id="telefone1" enterKeyHint="next" $error={!!errors.telefone1} {...register("telefone1")} />
         {errors.telefone1 && <ErrorMessage>⚠ {errors.telefone1.message}</ErrorMessage>}
       </FormRow>
 
       <FormRow>
         <Label htmlFor="telefone2">Telefone 2:</Label>
-        <Input type="text" id="telefone2" $error={!!errors.telefone2} {...register("telefone2")} />
+        <Input type="tel" id="telefone2" enterKeyHint="next" $error={!!errors.telefone2} {...register("telefone2")} />
         {errors.telefone2 && <ErrorMessage>⚠ {errors.telefone2.message}</ErrorMessage>}
       </FormRow>
 
       <FormRow>
         <Label htmlFor="endereco">Endereço</Label>
-        <Input type="text" id="endereco" $error={!!errors.endereco} {...register("endereco")} />
+        <Input type="text" id="endereco" enterKeyHint="done" $error={!!errors.endereco} {...register("endereco")} />
         {errors.endereco && <ErrorMessage>⚠ {errors.endereco.message}</ErrorMessage>}
       </FormRow>
 

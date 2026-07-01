@@ -53,22 +53,22 @@ export function CreateServico ({ servicoSelecionado }: { servicoSelecionado: Ser
             <h1>Tela de cadastro de serviço</h1>
             <FormRow>
                 <Label htmlFor="servico">Serviço:</Label>
-                <Input type="text" id="servico" {...register("servico")} />
+                <Input type="text" id="servico" enterKeyHint="next" {...register("servico")} />
             </FormRow>
 
             <FormRow>
                 <Label htmlFor="valor">Valor:</Label>
-                <Input type="number" id="valor" {...register("valor")} />
+                <Input type="number" id="valor" inputMode="decimal" enterKeyHint="next" {...register("valor")} />
             </FormRow>
 
             <FormRow>
                 <Label htmlFor="linha">Linha:</Label>
-                <Input type="text" id="linha" {...register("linha")} />
+                <Input type="text" id="linha" enterKeyHint="next" {...register("linha")} />
             </FormRow>
 
             <FormRow>
                 <Label htmlFor="tipo">Tipo:</Label>
-                <Input type="text" id="tipo" {...register("tipo")} />
+                <Input type="text" id="tipo" enterKeyHint="done" {...register("tipo")} />
             </FormRow>
 
             <ButtonContainer>

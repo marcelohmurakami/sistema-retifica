@@ -13,7 +13,7 @@ const Overlay = styled(motion.div)`
 
   padding: clamp(0.75rem, 3vw, 1.5rem);
 
-  background: rgba(2, 6, 23, 0.55);
+  background: color-mix(in srgb, ${({ theme }) => theme.colors.background} 74%, transparent);
   backdrop-filter: blur(8px);
 
   overflow-y: auto;
@@ -30,15 +30,11 @@ const ModalCard = styled(motion.div)`
   overscroll-behavior: contain;
 
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.92);
+  background: ${({ theme }) => theme.colors.surface};
 
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid ${({ theme }) => theme.colors.border};
 
-  box-shadow:
-    0 22px 60px rgba(2, 6, 23, 0.22),
-    0 1px 0 rgba(255, 255, 255, 0.55) inset;
-
-  backdrop-filter: blur(10px);
+  box-shadow: ${({ theme }) => theme.shadow.md};
 
   position: relative;
 
@@ -77,14 +73,15 @@ const CloseButton = styled.button`
 
   border-radius: 12px;
 
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  background: white;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
 
   cursor: pointer;
   font-size: 16px;
   font-weight: 800;
 
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+  box-shadow: ${({ theme }) => theme.shadow.sm};
 
   @media (max-width: 420px) {
     width: 38px;

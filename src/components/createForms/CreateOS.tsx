@@ -47,6 +47,17 @@ export function CreateOS({ osSelecionada }: CreateOSProps) {
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerms] = useState("");
 
+  useEffect(() => {
+    if (hasId) return;
+
+    const normalizedSearch = searchTerm.trim();
+    const timeoutId = window.setTimeout(() => {
+      setSearchInput(normalizedSearch.length >= 2 ? normalizedSearch : "");
+    }, 350);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [hasId, searchTerm]);
+
   const { clientes, isLoadingClientes } = useGetClientes(
     "cliente",
     1,
@@ -214,6 +225,11 @@ function adicionarItemCadastrado(
     );
   }
 
+  function handleClienteSearch() {
+    const normalizedSearch = searchTerm.trim();
+    setSearchInput(normalizedSearch.length >= 2 ? normalizedSearch : "");
+  }
+
   const valorTotal = useMemo(() => {
     return servicosAdicionados.reduce((total, item) => {
       return total + Number(item.valor) * Number(item.quantidade);
@@ -271,7 +287,6 @@ function adicionarItemCadastrado(
 
   if (
     isPending ||
-    isLoadingClientes ||
     isLoadingServicos ||
     isPendingOS ||
     isLoadingItensOS ||
@@ -289,18 +304,20 @@ function adicionarItemCadastrado(
 
         <SelectCliente>
           <Input
-            disabled={isLoadingClientes || hasId}
-            type="text"
+            disabled={hasId}
+            type="search"
+            enterKeyHint="search"
             placeholder={
               hasId ? osSelecionada?.Clientes?.cliente : "Buscar por cliente..."
             }
             value={searchTerm}
             onChange={(e) => setSearchTerms(e.target.value)}
+            onBlur={handleClienteSearch}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                setSearchInput(searchTerm);
                 e.preventDefault();
                 e.stopPropagation();
+                handleClienteSearch();
               }
             }}
           />
@@ -308,7 +325,7 @@ function adicionarItemCadastrado(
           <Select
             id="idCliente"
             {...register("idCliente", { valueAsNumber: true })}
-            disabled={isLoadingClientes || hasId}
+            disabled={hasId || !searchInput}
           >
             <option value="" disabled>
               {isLoadingClientes
@@ -344,6 +361,7 @@ function adicionarItemCadastrado(
         <Input
           type="text"
           id="formaPagamento"
+          enterKeyHint="next"
           {...register("formaPagamento")}
         />
       </FormRow>
@@ -355,7 +373,7 @@ function adicionarItemCadastrado(
 
       <FormRow>
         <Label htmlFor="motor">Motor:</Label>
-        <Input type="text" id="motor" {...register("motor")} />
+        <Input type="text" id="motor" enterKeyHint="next" {...register("motor")} />
       </FormRow>
 
       <FormRow>
@@ -380,6 +398,8 @@ function adicionarItemCadastrado(
           type="number"
           min="1"
           value={qtdServicoSelecionada}
+          inputMode="numeric"
+          enterKeyHint="done"
           onChange={(e) => setQtdServicoSelecionada(Number(e.target.value))}
         />
       </FormRow>
@@ -406,6 +426,7 @@ function adicionarItemCadastrado(
           type="text"
           placeholder="Ex: Serviço especial no cabeçote"
           value={descricaoServicoManual}
+          enterKeyHint="next"
           onChange={(e) => setDescricaoServicoManual(e.target.value)}
         />
 
@@ -414,6 +435,8 @@ function adicionarItemCadastrado(
           step="0.01"
           placeholder="Valor"
           value={valorServicoManual}
+          inputMode="decimal"
+          enterKeyHint="next"
           onChange={(e) => setValorServicoManual(e.target.value)}
         />
 
@@ -421,6 +444,8 @@ function adicionarItemCadastrado(
           type="number"
           min="1"
           value={qtdServicoManual}
+          inputMode="numeric"
+          enterKeyHint="done"
           onChange={(e) => setQtdServicoManual(Number(e.target.value))}
         />
       </FormRow>
@@ -455,6 +480,8 @@ function adicionarItemCadastrado(
           type="number"
           min="1"
           value={qtdPecaSelecionada}
+          inputMode="numeric"
+          enterKeyHint="done"
           onChange={(e) => setQtdPecaSelecionada(Number(e.target.value))}
         />
       </FormRow>
@@ -477,6 +504,7 @@ function adicionarItemCadastrado(
           type="text"
           placeholder="Ex: Junta especial"
           value={descricaoPecaManual}
+          enterKeyHint="next"
           onChange={(e) => setDescricaoPecaManual(e.target.value)}
         />
 
@@ -485,6 +513,8 @@ function adicionarItemCadastrado(
           step="0.01"
           placeholder="Valor"
           value={valorPecaManual}
+          inputMode="decimal"
+          enterKeyHint="next"
           onChange={(e) => setValorPecaManual(e.target.value)}
         />
 
@@ -492,6 +522,8 @@ function adicionarItemCadastrado(
           type="number"
           min="1"
           value={qtdPecaManual}
+          inputMode="numeric"
+          enterKeyHint="done"
           onChange={(e) => setQtdPecaManual(Number(e.target.value))}
         />
       </FormRow>
@@ -553,7 +585,7 @@ function adicionarItemCadastrado(
 
       <FormRow>
         <Label htmlFor="obs">Observações:</Label>
-        <Input type="text" id="obs" {...register("obs")} />
+        <Input type="text" id="obs" enterKeyHint="done" {...register("obs")} />
       </FormRow>
 
       <FormRow>

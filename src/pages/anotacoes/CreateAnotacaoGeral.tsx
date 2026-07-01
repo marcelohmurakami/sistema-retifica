@@ -77,6 +77,7 @@ export function CreateAnotacaoGeral({
             <Label>Titulo</Label>
             <Input
                 placeholder="Ex: Cliente João - serviços sem OS"
+                enterKeyHint="next"
                 {...register("titulo", { required: true })}
             />
             </FieldGroup>
@@ -86,6 +87,7 @@ export function CreateAnotacaoGeral({
             <Input
                 type="text"
                 placeholder="Ex: Marcelo Henrique Murakami"
+                enterKeyHint="next"
                 {...register("cliente")}
             />
             </FieldGroup>
@@ -97,6 +99,7 @@ export function CreateAnotacaoGeral({
             Plaina cabeçote - R$ 180,00
             Solda coletor - R$ 90,00
             Retificar volante - R$ 120,00`}
+                enterKeyHint="done"
                 {...register("descricao")}
             />
             </FieldGroup>

@@ -24,7 +24,17 @@ export function CreateOrcamento({
 
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerms] = useState("");
-  
+
+  useEffect(() => {
+    if (hasId) return;
+
+    const normalizedSearch = searchTerm.trim();
+    const timeoutId = window.setTimeout(() => {
+      setSearchInput(normalizedSearch.length >= 2 ? normalizedSearch : "");
+    }, 350);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [hasId, searchTerm]);
 
   const {
     register,
@@ -82,6 +92,11 @@ export function CreateOrcamento({
     console.log("erros do formulário:", errors);
   }
 
+  function handleClienteSearch() {
+    const normalizedSearch = searchTerm.trim();
+    setSearchInput(normalizedSearch.length >= 2 ? normalizedSearch : "");
+  }
+
   if (isPending || isPendingOrcamento) return <LoadingContainer />;
 
   return (
@@ -93,16 +108,18 @@ export function CreateOrcamento({
 
         <SelectCliente>
           <Input
-            disabled={isLoadingClientes || hasId}
-            type="text"
+            disabled={hasId}
+            type="search"
+            enterKeyHint="search"
             placeholder={hasId ? orcamentoParaEditar?.Clientes.cliente : "Buscar por cliente..."}
             value={searchTerm}
             onChange={(e) => setSearchTerms(e.target.value)}
+            onBlur={handleClienteSearch}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
                 e.stopPropagation();
-                setSearchInput(searchTerm);
+                handleClienteSearch();
               }
             }}
           />
@@ -110,7 +127,7 @@ export function CreateOrcamento({
           <Select
             id="idCliente"
             {...register("idCliente")}
-            disabled={isLoadingClientes || hasId || !searchInput}
+            disabled={hasId || !searchInput}
           >
             <option value="">
               {isLoadingClientes ? "Carregando clientes..." : "Selecione um cliente"}
@@ -130,6 +147,7 @@ export function CreateOrcamento({
         <Input
           type="text"
           id="motor"
+          enterKeyHint="next"
           $error={!!errors.motor}
           {...register("motor")}
         />
@@ -139,6 +157,7 @@ export function CreateOrcamento({
         <Label htmlFor="orcamento">Orçamento:</Label>
         <TextArea
           id="orcamento"
+          enterKeyHint="next"
           {...register("orcamento")}
         />
       </FormRow>
@@ -147,6 +166,7 @@ export function CreateOrcamento({
         <Label htmlFor="obs">Observações:</Label>
         <TextArea
           id="obs"
+          enterKeyHint="done"
           {...register("obs")}
         />
       </FormRow>

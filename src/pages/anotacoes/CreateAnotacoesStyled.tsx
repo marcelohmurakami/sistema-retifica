@@ -7,7 +7,7 @@ export const ModalOverlay = styled.div`
   display: grid;
   place-items: center;
   padding: clamp(12px, 4vw, 24px);
-  background: rgba(15, 23, 42, 0.55);
+  background: color-mix(in srgb, ${({ theme }) => theme.colors.background} 74%, transparent);
   backdrop-filter: blur(6px);
 `;
 
@@ -15,28 +15,28 @@ export const ModalCard = styled.div`
   width: min(620px, 96vw);
   max-height: 90vh;
   overflow: auto;
-  background: #ffffff;
+  background: ${({ theme }) => theme.colors.surface};
   border-radius: 18px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.24);
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  box-shadow: ${({ theme }) => theme.shadow.md};
 `;
 
 export const ModalHeader = styled.div`
   padding: 22px 24px 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   justify-content: space-between;
   gap: 16px;
 
   h2 {
     margin: 0;
-    color: #0f172a;
+    color: ${({ theme }) => theme.colors.primaryDark};
     font-size: 22px;
   }
 
   p {
     margin: 6px 0 0;
-    color: #64748b;
+    color: ${({ theme }) => theme.colors.textSecondary};
     font-size: 14px;
   }
 
@@ -52,15 +52,15 @@ export const ModalHeader = styled.div`
 export const CloseButton = styled.button`
   width: 38px;
   height: 38px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 12px;
-  background: #f8fafc;
-  color: #334155;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.textPrimary};
   cursor: pointer;
   font-size: 18px;
 
   &:hover {
-    background: #e2e8f0;
+    background: ${({ theme }) => theme.colors.border};
   }
 `;
 
@@ -84,22 +84,22 @@ export const FieldGroup = styled.div`
 export const Label = styled.label`
   font-size: 14px;
   font-weight: 700;
-  color: #334155;
+  color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
 export const Input = styled.input`
   height: 44px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 12px;
   padding: 0 14px;
-  color: #0f172a;
-  background: #ffffff;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  background: ${({ theme }) => theme.colors.surface};
   outline: none;
   font-size: 14px;
 
   &:focus {
-    border-color: #f97316;
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+    border-color: ${({ theme }) => theme.colors.accent};
+    box-shadow: 0 0 0 3px color-mix(in srgb, ${({ theme }) => theme.colors.accent} 24%, transparent);
   }
 
   @media (max-width: 520px) {
@@ -111,18 +111,18 @@ export const Input = styled.input`
 export const Textarea = styled.textarea`
   min-height: 120px;
   resize: vertical;
-  border: 1px solid #cbd5e1;
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 12px;
   padding: 12px 14px;
-  color: #0f172a;
-  background: #ffffff;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  background: ${({ theme }) => theme.colors.surface};
   outline: none;
   font-size: 14px;
   line-height: 1.5;
 
   &:focus {
-    border-color: #f97316;
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+    border-color: ${({ theme }) => theme.colors.accent};
+    box-shadow: 0 0 0 3px color-mix(in srgb, ${({ theme }) => theme.colors.accent} 24%, transparent);
   }
 
   @media (max-width: 520px) {
@@ -147,33 +147,33 @@ export const PriorityOption = styled.button<{
   height: 42px;
   border-radius: 12px;
   border: 1px solid
-    ${({ $active, $variant }) =>
+    ${({ $active, $variant, theme }) =>
       $active
         ? $variant === "alto"
-          ? "#ef4444"
+          ? theme.colors.error
           : $variant === "medio"
-          ? "#f59e0b"
-          : "#22c55e"
-        : "#e2e8f0"};
-  background: ${({ $active, $variant }) =>
+          ? theme.colors.warning
+          : theme.colors.success
+        : theme.colors.border};
+  background: ${({ $active, $variant, theme }) =>
     !$active
-      ? "#ffffff"
+      ? theme.colors.surface
       : $variant === "alto"
-      ? "#fef2f2"
+      ? `color-mix(in srgb, ${theme.colors.error} 16%, ${theme.colors.surface})`
       : $variant === "medio"
-      ? "#fffbeb"
-      : "#f0fdf4"};
-  color: ${({ $variant }) =>
+      ? `color-mix(in srgb, ${theme.colors.warning} 16%, ${theme.colors.surface})`
+      : `color-mix(in srgb, ${theme.colors.success} 16%, ${theme.colors.surface})`};
+  color: ${({ $variant, theme }) =>
     $variant === "alto"
-      ? "#991b1b"
+      ? theme.colors.error
       : $variant === "medio"
-      ? "#92400e"
-      : "#166534"};
+      ? theme.colors.warning
+      : theme.colors.success};
   font-weight: 800;
   cursor: pointer;
 
   &:hover {
-    background: #f8fafc;
+    background: ${({ theme }) => theme.colors.background};
   }
 `;
 
@@ -194,30 +194,30 @@ export const FormActions = styled.div`
 `;
 
 export const CancelButton = styled.button`
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #334155;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
   border-radius: 12px;
   padding: 10px 16px;
   font-weight: 700;
   cursor: pointer;
 
   &:hover {
-    background: #f1f5f9;
+    background: ${({ theme }) => theme.colors.background};
   }
 `;
 
 export const SubmitButton = styled.button`
   border: none;
-  background: #f97316;
-  color: #ffffff;
+  background: ${({ theme }) => theme.colors.accent};
+  color: ${({ theme }) => theme.colors.surface};
   border-radius: 12px;
   padding: 10px 18px;
   font-weight: 800;
   cursor: pointer;
 
   &:hover {
-    background: #ea580c;
+    background: ${({ theme }) => theme.colors.accentDark};
   }
 
   &:disabled {
@@ -250,18 +250,18 @@ export const ChecklistActions = styled.div`
 export const ActionButton = styled.button`
   width: 34px;
   height: 34px;
-  border: 1px solid #bfdbfe;
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 10px;
-  background: #eff6ff;
-  color: #2563eb;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.accent};
   display: grid;
   place-items: center;
   cursor: pointer;
   transition: 0.2s;
 
   &:hover {
-    background: #dbeafe;
-    border-color: #93c5fd;
+    background: ${({ theme }) => theme.colors.border};
+    border-color: ${({ theme }) => theme.colors.accent};
   }
 
   @media (max-width: 420px) {
@@ -272,12 +272,12 @@ export const ActionButton = styled.button`
 `;
 
 export const DeleteButton = styled(ActionButton)`
-  border-color: #fecaca;
-  background: #fef2f2;
-  color: #dc2626;
+  border-color: ${({ theme }) => theme.colors.error};
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.error};
 
   &:hover {
-    background: #fee2e2;
-    border-color: #fca5a5;
+    background: ${({ theme }) => theme.colors.border};
+    border-color: ${({ theme }) => theme.colors.error};
   }
 `;

@@ -5,13 +5,10 @@ export const Form = styled.form`
   margin: 0 auto;
   padding: clamp(1.25rem, 2.4vw, 2rem);
 
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 20px;
-  box-shadow:
-    0 18px 45px rgba(2, 6, 23, 0.12),
-    0 1px 0 rgba(255, 255, 255, 0.55) inset;
-  backdrop-filter: blur(10px);
+  box-shadow: ${({ theme }) => theme.shadow.md};
 
   display: grid;
   gap: 1rem;
@@ -21,7 +18,7 @@ export const Form = styled.form`
     margin: 0 3rem 0.25rem 0;
     font-size: clamp(1.7rem, 4vw, 2.4rem);
     line-height: 1.2;
-    color: #0f172a;
+    color: ${({ theme }) => theme.colors.primaryDark};
   }
 
   h1::after {
@@ -29,12 +26,7 @@ export const Form = styled.form`
     display: block;
     margin-top: 0.9rem;
     height: 1px;
-    background: linear-gradient(
-      90deg,
-      rgba(15, 23, 42, 0.16),
-      rgba(15, 23, 42, 0.04),
-      rgba(15, 23, 42, 0)
-    );
+    background: ${({ theme }) => theme.colors.border};
   }
 
   @media (max-width: 640px) {
@@ -64,8 +56,8 @@ export const FormRow = styled.div`
 
   padding: 0.85rem;
   border-radius: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  background: rgba(248, 250, 252, 0.7);
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.background};
 
   transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
 
@@ -74,10 +66,10 @@ export const FormRow = styled.div`
   }
 
   &:focus-within {
-    border-color: rgba(37, 99, 235, 0.35);
-    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.12);
+    border-color: ${({ theme }) => theme.colors.accent};
+    box-shadow: ${({ theme }) => theme.shadow.sm};
     transform: translateY(-1px);
-    background: rgba(248, 250, 252, 0.92);
+    background: ${({ theme }) => theme.colors.surface};
   }
 
   @media (max-width: 640px) {
@@ -90,7 +82,7 @@ export const FormRow = styled.div`
 export const Label = styled.label`
   font-size: 1.4rem;
   font-weight: 700;
-  color: #0f172a;
+  color: ${({ theme }) => theme.colors.textPrimary};
   overflow-wrap: anywhere;
 
   @media (max-width: 640px) {
@@ -105,29 +97,27 @@ export const Input = styled.input<{ $error?: boolean }>`
   padding: 0.75rem 0.9rem;
 
   border-radius: 12px;
-  border: 1px solid ${({ $error }) => ($error ? "#ff4d4f" : "#ccc")};
-  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid ${({ $error, theme }) => ($error ? theme.colors.error : theme.colors.border)};
+  background: ${({ theme }) => theme.colors.surface};
 
-  color: #0f172a;
+  color: ${({ theme }) => theme.colors.textPrimary};
   font-size: 1.35rem;
 
   outline: none;
   transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
 
   &::placeholder {
-    color: rgba(15, 23, 42, 0.45);
+    color: ${({ theme }) => theme.colors.textSecondary};
   }
 
   &:hover {
-    border-color: rgba(15, 23, 42, 0.22);
+    border-color: ${({ theme }) => theme.colors.textSecondary};
   }
 
   &:focus {
-    border-color: ${({ $error }) => ($error ? "#ff4d4f" : "#4c8bf5")};
-    box-shadow:
-      0 0 0 4px rgba(37, 99, 235, 0.14),
-      0 10px 22px rgba(2, 6, 23, 0.08);
-    background: #ffffff;
+    border-color: ${({ $error, theme }) => ($error ? theme.colors.error : theme.colors.accent)};
+    box-shadow: 0 0 0 3px color-mix(in srgb, ${({ theme }) => theme.colors.accent} 24%, transparent);
+    background: ${({ theme }) => theme.colors.surface};
   }
 
   @media (max-width: 640px) {
@@ -161,10 +151,10 @@ export const ErrorMessage = styled.span`
   font-size: 1.2rem;
   font-weight: 600;
 
-  color: #ff4d4f;
-  background: #fff1f0;
+  color: ${({ theme }) => theme.colors.error};
+  background: ${({ theme }) => theme.colors.background};
 
-  border-left: 3px solid #ff4d4f;
+  border-left: 3px solid ${({ theme }) => theme.colors.error};
   border-radius: 4px;
 `;
 
@@ -179,16 +169,15 @@ export const SubmitButton = styled.button`
 
   font-weight: 800;
   font-size: 1.35rem;
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.surface};
 
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
-  box-shadow:
-    0 14px 30px rgba(37, 99, 235, 0.22),
-    0 6px 14px rgba(124, 58, 237, 0.12);
+  background: ${({ theme }) => theme.colors.accent};
+  box-shadow: ${({ theme }) => theme.shadow.sm};
 
   transition: transform 140ms ease, filter 140ms ease, box-shadow 140ms ease;
 
   &:hover {
+    background: ${({ theme }) => theme.colors.accentDark};
     filter: brightness(1.03);
     transform: translateY(-1px);
   }
@@ -219,9 +208,9 @@ export const Select = styled.select`
   padding: 0.75rem 2.6rem 0.75rem 0.9rem;
 
   border-radius: 12px;
-  border: 1px solid #ccc;
-  background-color: rgba(255, 255, 255, 0.9);
-  color: #0f172a;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background-color: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
 
   font-size: 1.35rem;
   font-weight: 500;
@@ -240,21 +229,19 @@ export const Select = styled.select`
   transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
 
   &:hover:not(:disabled) {
-    border-color: rgba(15, 23, 42, 0.22);
+    border-color: ${({ theme }) => theme.colors.textSecondary};
   }
 
   &:focus {
-    border-color: #4c8bf5;
-    box-shadow:
-      0 0 0 4px rgba(37, 99, 235, 0.14),
-      0 10px 22px rgba(2, 6, 23, 0.08);
-    background-color: #ffffff;
+    border-color: ${({ theme }) => theme.colors.accent};
+    box-shadow: 0 0 0 3px color-mix(in srgb, ${({ theme }) => theme.colors.accent} 24%, transparent);
+    background-color: ${({ theme }) => theme.colors.surface};
   }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.65;
-    background-color: #f8fafc;
+    background-color: ${({ theme }) => theme.colors.background};
   }
 
   @media (max-width: 640px) {
@@ -287,13 +274,13 @@ export const ServicosAdicionados = styled.div`
   gap: 12px;
   margin-bottom: 8px;
   padding: 0.9rem 1rem;
-  border: 1px solid #d8dee8;
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 12px;
-  background: #ffffff;
+  background: ${({ theme }) => theme.colors.surface};
 
   span {
     min-width: 0;
-    color: #0f172a;
+    color: ${({ theme }) => theme.colors.textPrimary};
     font-size: 1.25rem;
     line-height: 1.45;
     overflow-wrap: anywhere;
@@ -303,17 +290,17 @@ export const ServicosAdicionados = styled.div`
     flex: 0 0 auto;
     min-height: 34px;
     padding: 0.55rem 0.9rem;
-    border: 1px solid #fecaca;
+    border: 1px solid ${({ theme }) => theme.colors.error};
     border-radius: 10px;
-    background: #fff1f2;
-    color: #b91c1c;
+    background: ${({ theme }) => theme.colors.background};
+    color: ${({ theme }) => theme.colors.error};
     font-weight: 700;
     cursor: pointer;
     transition: background 0.16s ease, transform 0.16s ease;
   }
 
   button:hover {
-    background: #ffe4e6;
+    background: ${({ theme }) => theme.colors.border};
     transform: translateY(-1px);
   }
 
@@ -332,15 +319,16 @@ export const TextArea = styled.textarea<{ $error?: boolean }>`
   min-height: 150px;
   padding: 12px;
   border-radius: 8px;
-  border: 1px solid ${({ $error }) => ($error ? "#ef4444" : "#E2E8F0")};
-  background: #fff;
+  border: 1px solid ${({ $error, theme }) => ($error ? theme.colors.error : theme.colors.border)};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
 
   font-size: 14px;
   resize: vertical;
 
   &:focus {
     outline: none;
-    border-color: #F97316;
-    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+    border-color: ${({ theme }) => theme.colors.accent};
+    box-shadow: 0 0 0 3px color-mix(in srgb, ${({ theme }) => theme.colors.accent} 24%, transparent);
   }
 `;

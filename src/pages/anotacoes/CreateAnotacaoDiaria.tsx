@@ -104,6 +104,7 @@ export function CreateAnotacaoDiaria({
             <Label>Tarefa</Label>
             <Input
               placeholder="Ex: Mandar orçamento do cliente João"
+              enterKeyHint="next"
               {...register("titulo", { required: true })}
             />
           </FieldGroup>
@@ -112,6 +113,7 @@ export function CreateAnotacaoDiaria({
             <Label>Data</Label>
             <Input
               type="date"
+              enterKeyHint="done"
               {...register("data", { required: true })}
             />
           </FieldGroup>
