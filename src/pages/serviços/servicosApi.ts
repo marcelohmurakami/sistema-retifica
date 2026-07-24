@@ -2,6 +2,9 @@ import { getEmpresaIdAtual } from "../../components/empresas/empresasApi";
 import type { ServicoType } from "../../models/servico";
 import { supabase } from "../../services/supabaseApi";
 import { PAGE_SIZE } from "../../utils/pageSize";
+import { getPaginationRange, parseSort } from "../../utils/queryPagination";
+
+const SERVICE_SORT_FIELDS = new Set(["id", "servico", "valor", "linha", "tipo"]);
 
 export async function getServicos(): Promise<ServicoType[]> {
   const empresaId = await getEmpresaIdAtual();
@@ -25,18 +28,17 @@ type ServicosPaginationResponse = {
 
 export async function getServicosWithPagination(sortByString: string, page: number, searchInput: string = "", tipo: "servico" | "peca"): Promise<ServicosPaginationResponse> {
   const empresaId = await getEmpresaIdAtual();
-
-  const sortBy = sortByString.split('-')[0];
-  const direction = sortByString.split('-')[1] === "asc" || sortBy === 'id' ? true : false;
-
-  const from = Math.max((page - 1) * PAGE_SIZE, 0);
-  const to = from + PAGE_SIZE - 1;
+  const { field: sortBy, ascending } = parseSort(
+    sortByString,
+    SERVICE_SORT_FIELDS,
+  );
+  const { from, to } = getPaginationRange(page, PAGE_SIZE);
   
   let query = supabase
     .from("Servicos")
     .select("*", { count: "exact" })
     .eq("tipo", tipo)
-    .order(sortBy, {ascending: direction})
+    .order(sortBy, { ascending })
     .eq('empresa_id', empresaId);
 
   if (searchInput.trim()) {
@@ -113,8 +115,7 @@ export async function updateServicos({
     .single();
 
   if (error) {
-    console.log("Erro ao atualizar serviço:", error);
-    throw error;
+    throw new Error(error.message);
   }
 
   return data;

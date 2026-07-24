@@ -1,17 +1,19 @@
 import { getEmpresaIdAtual } from "../../components/empresas/empresasApi";
 import { supabase } from "../../services/supabaseApi";
+import type { PagamentoRecebido } from "../../models/financeiro";
 
-export async function getPagamentoRecebido() {
+export async function getPagamentoRecebido(): Promise<PagamentoRecebido[]> {
   const empresaId = await getEmpresaIdAtual();
     
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from('PagamentoRecebido')
     .select('*')
-    .eq('empresa_id', empresaId);
+    .eq('empresa_id', empresaId)
+    .order('dataRecebimento', { ascending: false });
 
   if (error) throw new Error("Não foi possível carregar os pagamentos recebidos.");
 
-  return data;
+  return data ?? [];
 }
 
 export async function deletePagamentoRecebido(id: number) {

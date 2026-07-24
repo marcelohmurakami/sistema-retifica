@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export const IconBtnStyled = styled.div`
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   justify-content: flex-end;
   align-items: center;
 `;
@@ -14,48 +14,40 @@ export const IconButton = styled.button`
 
   width: 36px;
   height: 36px;
-
-  border: 1px solid rgba(0,0,0,0.12);
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 10px;
-  background: #fff;
-
-  cursor: pointer;
-
-  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
 
   svg {
-    font-size: 18px;
+    font-size: 15px;
   }
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 18px rgba(0,0,0,0.10);
-    border-color: rgba(0,0,0,0.18);
+    box-shadow: ${({ theme }) => theme.shadow.sm};
+    border-color: color-mix(in srgb, ${({ theme }) => theme.colors.accent} 30%, ${({ theme }) => theme.colors.border});
   }
 
   &:active {
     transform: translateY(0);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.10);
-  }
-
-  &:focus-visible {
-    outline: 3px solid rgba(59,130,246,0.5);
-    outline-offset: 2px;
+    box-shadow: none;
   }
 `;
 
 export const EditButton = styled(IconButton)`
-  color: #1f6feb;
+  color: ${({ theme }) => theme.colors.info};
 
   &:hover {
-    background: rgba(31,111,235,0.06);
+    background: color-mix(in srgb, ${({ theme }) => theme.colors.info} 8%, transparent);
   }
 `;
 
 export const DeleteButton = styled(IconButton)`
-  color: #d1242f;
+  color: ${({ theme }) => theme.colors.error};
 
   &:hover {
-    background: rgba(209,36,47,0.06);
+    background: color-mix(in srgb, ${({ theme }) => theme.colors.error} 8%, transparent);
   }
 `;

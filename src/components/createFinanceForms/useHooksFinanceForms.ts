@@ -1,5 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  type AccountsPayableFormData,
+  type AccountsReceivablePayload,
+  type PaidPaymentFormData,
+  type ReceivedPaymentFormData,
     createAccountsPayable,
   createAccountsReceivable,
   createPaidPayment,
@@ -9,38 +13,6 @@ import {
   updatePaidPayment,
   updateReceivedPayment
 } from "./apiFinanceForms";
-
-type AccountsReceivablePayload = {
-  descricao: string;
-  valor: number;
-  valorRecebido: number;
-  dataPagamento: string;
-  status: string;
-  osId: number;
-};
-
-type AccountsPayablePayload = {
-  descricao: string;
-  valor: number;
-  valor_parcial_pago?: number;
-  dataVencimento: string;
-  status: string;
-  categoria: string;
-}
-
-type PaidPaymentPayload = {
-  descricao: string;
-  idContaReceber?: number | null;
-  valor?: number | undefined;
-  formaPagamento?: string;
-  dataRecebimento?: string;
-  dataPagamento?: string | Date;
-  observacoes?: string;
-  metodoPag?: string;
-  taxaMaquina?: number;
-};
-
-type ReceivedPaymentPayload = any;
 
 export function useAccountsReceivableForm() {
   const queryClient = useQueryClient();
@@ -76,7 +48,7 @@ export function useContasPagarForm() {
       data,
     }: {
       id?: number;
-      data: AccountsPayablePayload;
+      data: AccountsPayableFormData;
     }) => {
       if (id) {
         return updateAccountsPayable(id, data);
@@ -101,7 +73,7 @@ export function usePagamentosRecebidosForm() {
       id,
     }: {
       id?: number;
-      data: ReceivedPaymentPayload;
+      data: ReceivedPaymentFormData;
     }) => {
       if (id) {
         return updateReceivedPayment(id, data);
@@ -113,6 +85,7 @@ export function usePagamentosRecebidosForm() {
       queryClient.invalidateQueries({
         queryKey: ["PagamentoRecebido"],
       });
+      queryClient.invalidateQueries({ queryKey: ["relatoriosRecebimentos"] });
     },
   });
 }
@@ -126,7 +99,7 @@ export function usePagamentosQuitadosForm() {
       id,
     }: {
       id?: number;
-      data: PaidPaymentPayload;
+      data: PaidPaymentFormData;
     }) => {
       if (id) {
         return updatePaidPayment(id, data);
@@ -138,6 +111,7 @@ export function usePagamentosQuitadosForm() {
       queryClient.invalidateQueries({
         queryKey: ["PagamentoQuitado"],
       });
+      queryClient.invalidateQueries({ queryKey: ["relatoriosPagamentos"] });
     },
   });
 }

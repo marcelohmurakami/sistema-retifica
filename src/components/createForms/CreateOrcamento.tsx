@@ -1,14 +1,15 @@
-import { useForm } from "react-hook-form";
-import { ButtonContainer, Form, FormRow, Input, Label, Select, SelectCliente, SubmitButton, TextArea } from "./CreateClienteStyled";
+import { useForm, type FieldErrors } from "react-hook-form";
+import { ButtonContainer, Form, FormRow, Input, Label, Select, SelectCliente, SubmitButton, TextArea } from "../ui/EntityFormStyled";
 import { LoadingContainer } from "../spinner/LoadingContainer";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useEditOrcamento, useInsertOrcamentos } from "./useOrcamentos";
 import { useGetClientes } from "./useGetOs";
 import { z } from "zod";
+import type { OrcamentoType } from "../../models/orcamento";
 
 const orcamentoSchema = z.object({
-  idCliente: z.coerce.number().min(1, "Selecione um cliente"),
+  idCliente: z.number().min(1, "Selecione um cliente"),
   motor: z.string().min(1, "Digite o motor"),
   orcamento: z.string().min(1, "Digite o orçamento"),
   obs: z.string().optional(),
@@ -19,7 +20,10 @@ type OrcamentoFormData = z.infer<typeof orcamentoSchema>;
 
 export function CreateOrcamento({
   orcamentoSelecionado: orcamentoParaEditar, setIsCreateOpen
-}: any) {
+}: {
+  orcamentoSelecionado?: OrcamentoType | null;
+  setIsCreateOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const hasId = !!orcamentoParaEditar?.id;
 
   const [searchInput, setSearchInput] = useState("");
@@ -41,7 +45,7 @@ export function CreateOrcamento({
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<any>({
+  } = useForm<OrcamentoFormData>({
     resolver: zodResolver(orcamentoSchema),
     defaultValues: {
       idCliente: undefined,
@@ -88,8 +92,9 @@ export function CreateOrcamento({
     mutate(data);
   }
 
-  function onError(errors: any) {
-    console.log("erros do formulário:", errors);
+  function onError(errors: FieldErrors<OrcamentoFormData>) {
+    const firstError = Object.values(errors)[0]?.message;
+    if (firstError) console.warn(firstError);
   }
 
   function handleClienteSearch() {
@@ -126,14 +131,14 @@ export function CreateOrcamento({
 
           <Select
             id="idCliente"
-            {...register("idCliente")}
+            {...register("idCliente", { valueAsNumber: true })}
             disabled={hasId || !searchInput}
           >
             <option value="">
               {isLoadingClientes ? "Carregando clientes..." : "Selecione um cliente"}
             </option>
 
-            {clientes?.map((c: any) => (
+            {clientes?.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.cliente}
               </option>

@@ -2,7 +2,7 @@ import Swal from "sweetalert2";
 
 export async function handleDelete(
   id: number | undefined,
-  mutate: (id: number) => void | undefined,
+  mutate: (id: number) => void,
   text: string
 ) {
   const result = await Swal.fire({

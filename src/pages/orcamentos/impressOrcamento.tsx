@@ -15,10 +15,12 @@ import {
   Footer,
 } from './impressOrcamentoStyled'
 import logo from '../../assets/logo-print.jpg';
+import type { OrcamentoType } from '../../models/orcamento';
+import type { ClienteType } from '../../models/cliente';
 
 type ImpressOrcamentoProps = {
-  orcamento: any
-  cliente: any
+  orcamento?: OrcamentoType | null
+  cliente?: ClienteType | null
 }
 
 export function ImpressOrcamento({ orcamento, cliente }: ImpressOrcamentoProps) {

@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllClientes } from "./clientesApi";
+import { getAllClientesCount } from "./clientesApi";
 import { useAuth } from "../../contexts/AuthContext";
 
 export function useGetAllClientes() {
     const { user } = useAuth();
 
-    const { data, isLoading } = useQuery<any>({
+    const { data: count = 0, isLoading } = useQuery<number>({
         queryKey: ["clientes", "lista", user?.id],
         enabled: !!user?.id,
-        queryFn: getAllClientes,
+        queryFn: getAllClientesCount,
     });
-    return { data, isLoading, count: data?.length || 0 };
+    return { isLoading, count };
 }

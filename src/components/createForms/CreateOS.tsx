@@ -1,30 +1,23 @@
 import { useForm } from "react-hook-form"
-import { ButtonContainer, Form, FormRow, Input, Label, Select, SelectCliente, ServicosAdicionados, SubmitButton } from "./CreateClienteStyled"
+import { ButtonContainer, Form, FormRow, Input, Label, Select, SelectCliente, ServicosAdicionados, SubmitButton } from "../ui/EntityFormStyled"
 
-import type { OsType } from "../../models/os"
+import type { OSCreateInput, OSEditInput } from "../../models/os"
 import type { ClienteType } from "../../models/cliente"
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LoadingContainer } from "../spinner/LoadingContainer"
 
 import { defaultValues, editDefaultValues } from "../../utils/osDefaultValues"
 import { useEditOS, useGetClientes, useGetItensOS, useGetServicos, useInsertOS } from "./useGetOs"
 import { useGetEstoque } from "../../pages/estoque/useEstoque";
+import type { ServicoAdicionado } from "../../pages/ordensDeServico/osApi";
+import {
+  calculateOsItemsTotal,
+  resolveSelectedItemId,
+} from "../../utils/osItems";
+import { sortByName } from "../../utils/sortByName";
 
 type TipoItemOS = "servico" | "peca";
-
-type ServicoAdicionadoComValor = {
-  servicoId?: number | null;
-  produtoEstoqueId?: number | null;
-  descricao: string;
-  valor: number;
-  quantidade: number;
-  tipo: TipoItemOS;
-  manual: boolean;
-};
-
-export type OSCreateInput = Omit<OsType, "id" | "created_at">;
-export type OSEditInput = Omit<OsType, "created_at">;
 
 type CreateOSProps = {
   osSelecionada?:
@@ -38,11 +31,19 @@ export function CreateOS({ osSelecionada }: CreateOSProps) {
   const hasId = !!osSelecionada?.id;
 
   const { register, handleSubmit, reset, setValue } = useForm<OSCreateInput>({
-    defaultValues,
+    defaultValues: osSelecionada ? editDefaultValues(osSelecionada) : defaultValues,
   });
 
   const { servicos, isLoadingServicos } = useGetServicos();
   const { estoque, isLoadingEstoque } = useGetEstoque();
+  const servicosDisponiveis = useMemo(
+    () =>
+      sortByName(
+        servicos.filter((servico) => servico.tipo === "servico"),
+        (servico) => servico.servico,
+      ),
+    [servicos],
+  );
 
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerms] = useState("");
@@ -68,8 +69,8 @@ export function CreateOS({ osSelecionada }: CreateOSProps) {
     osSelecionada ?? ({} as OSEditInput)
   );
 
-  const [servicoSelecionado, setServicoSelecionado] = useState<number>(1);
-  const [pecaSelecionada, setPecaSelecionada] = useState<number>(1);
+  const [servicoSelecionado, setServicoSelecionado] = useState(0);
+  const [pecaSelecionada, setPecaSelecionada] = useState(0);
 
   const [qtdServicoSelecionada, setQtdServicoSelecionada] = useState<number>(1);
   const [qtdPecaSelecionada, setQtdPecaSelecionada] = useState<number>(1);
@@ -82,49 +83,103 @@ export function CreateOS({ osSelecionada }: CreateOSProps) {
   const [valorPecaManual, setValorPecaManual] = useState("");
   const [qtdPecaManual, setQtdPecaManual] = useState<number>(1);
 
-  const [servicosAdicionados, setServicosSelecionados] = useState<
-    ServicoAdicionadoComValor[]
-  >([]);
+  const [servicosAdicionados, setServicosSelecionados] = useState<ServicoAdicionado[]>([]);
+  const [itensCarregados, setItensCarregados] = useState(!hasId);
+  const osHidratadaRef = useRef<number | null>(null);
+  const servicoSelecionadoValido = resolveSelectedItemId(
+    servicosDisponiveis,
+    servicoSelecionado,
+  );
+  const pecaSelecionadaValida = resolveSelectedItemId(
+    estoque,
+    pecaSelecionada,
+  );
 
   const { mutate, isPending } = useInsertOS(
     reset,
     setServicosSelecionados,
-    setServicoSelecionado,
-    setQtdServicoSelecionada
   );
 
   const { mutateOS, isPendingOS } = useEditOS(
     reset,
     setServicosSelecionados,
-    setServicoSelecionado,
-    setQtdServicoSelecionada
   );
 
   useEffect(() => {
-    if (hasId && itensDaOS.length > 0) {
-      const itensFormatados: ServicoAdicionadoComValor[] = itensDaOS.map(
-        (item: any) => {
+    if (
+      !hasId ||
+      !osSelecionada ||
+      isLoadingItensOS ||
+      isLoadingServicos ||
+      isLoadingEstoque ||
+      osHidratadaRef.current === osSelecionada.id
+    ) {
+      return;
+    }
+
+    const itensFormatados: ServicoAdicionado[] = itensDaOS.map((item) => {
           const servicoEncontrado = servicos.find(
             (servico) => servico.id === item.id_servico
+          );
+          const produtoEncontrado = estoque.find(
+            (produto) => produto.id === item.produto_estoque_id,
+          );
+          const valorSalvo = Number(item.valor_unitario);
+          const valorReferencia = Number(
+            servicoEncontrado?.valor ?? produtoEncontrado?.valor ?? 0,
           );
 
           return {
             servicoId: item.id_servico ?? null,
+            produtoEstoqueId: item.produto_estoque_id ?? null,
             descricao:
               item.descricao ??
               servicoEncontrado?.servico ??
+              produtoEncontrado?.nome ??
               "Item sem descrição",
-            valor: Number(item.valor ?? servicoEncontrado?.valor ?? 0),
+            valor:
+              Number.isFinite(valorSalvo) && valorSalvo > 0
+                ? valorSalvo
+                : valorReferencia,
             quantidade: Number(item.quantidade ?? 1),
             tipo: item.tipo ?? servicoEncontrado?.tipo ?? "servico",
             manual: item.manual ?? !item.id_servico,
           };
-        }
-      );
+        });
 
-      setServicosSelecionados(itensFormatados);
+    if (
+      itensFormatados.length === 0 &&
+      Number(osSelecionada.valorServico) > 0
+    ) {
+      itensFormatados.push({
+        servicoId: null,
+        produtoEstoqueId: null,
+        descricao:
+          osSelecionada.servicosRealizados ||
+          osSelecionada.pecasTrocadas ||
+          `Serviço da OS ${osSelecionada.id}`,
+        valor: Number(osSelecionada.valorServico),
+        quantidade: 1,
+        tipo: "servico",
+        manual: true,
+      });
     }
-  }, [hasId, itensDaOS, servicos]);
+
+    osHidratadaRef.current = osSelecionada.id;
+    // Os dados assíncronos precisam hidratar o editor somente uma vez por OS.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setServicosSelecionados(itensFormatados);
+    setItensCarregados(true);
+  }, [
+    estoque,
+    hasId,
+    isLoadingEstoque,
+    isLoadingItensOS,
+    isLoadingServicos,
+    itensDaOS,
+    osSelecionada,
+    servicos,
+  ]);
 
 function adicionarItemCadastrado(
   tipo: TipoItemOS,
@@ -135,6 +190,10 @@ function adicionarItemCadastrado(
     const servicoEncontrado = servicos.find((s) => s.id === itemId);
 
     if (!servicoEncontrado) return;
+    if (Number(servicoEncontrado.valor) <= 0) {
+      alert("O serviço selecionado está sem valor cadastrado.");
+      return;
+    }
 
     setServicosSelecionados((estadoAnterior) => [
       ...estadoAnterior,
@@ -145,7 +204,6 @@ function adicionarItemCadastrado(
         valor: Number(servicoEncontrado.valor),
         quantidade,
         tipo: "servico",
-        origem: "servicos",
         manual: false,
       },
     ]);
@@ -154,9 +212,13 @@ function adicionarItemCadastrado(
   }
 
   if (tipo === "peca") {
-    const produtoEncontrado = estoque.find((p: any) => p.id === itemId);
+    const produtoEncontrado = estoque.find((p) => p.id === itemId);
 
     if (!produtoEncontrado) return;
+    if (Number(produtoEncontrado.valor) <= 0) {
+      alert("A peça selecionada está sem valor de venda cadastrado.");
+      return;
+    }
 
     if (Number(produtoEncontrado.qtdEstoque) < quantidade) {
       alert("Quantidade insuficiente em estoque.");
@@ -172,7 +234,6 @@ function adicionarItemCadastrado(
         valor: Number(produtoEncontrado.valor),
         quantidade,
         tipo: "peca",
-        origem: "estoque",
         manual: false,
       },
     ]);
@@ -231,12 +292,12 @@ function adicionarItemCadastrado(
   }
 
   const valorTotal = useMemo(() => {
-    return servicosAdicionados.reduce((total, item) => {
-      return total + Number(item.valor) * Number(item.quantidade);
-    }, 0);
+    return calculateOsItemsTotal(servicosAdicionados);
   }, [servicosAdicionados]);
 
   useEffect(() => {
+    if (!itensCarregados) return;
+
     setValue("valorServico", Number(valorTotal));
 
     const descricaoServicos = servicosAdicionados
@@ -251,23 +312,13 @@ function adicionarItemCadastrado(
 
     setValue("servicosRealizados", descricaoServicos);
     setValue("pecasTrocadas", descricaoPecas);
-  }, [servicosAdicionados, valorTotal, setValue]);
-
-  useEffect(() => {
-    if (hasId && osSelecionada) {
-      reset(editDefaultValues(osSelecionada));
-    } else {
-      reset(defaultValues);
-      setServicosSelecionados([]);
-    }
-  }, [hasId, osSelecionada, reset]);
+  }, [itensCarregados, servicosAdicionados, valorTotal, setValue]);
 
   function onSubmit(data: OSCreateInput) {
     if (!hasId) {
       mutate({
         os: data,
         itens: servicosAdicionados,
-        servicos,
       });
 
       return;
@@ -280,7 +331,6 @@ function adicionarItemCadastrado(
           id: osSelecionada.id,
         },
         itens: servicosAdicionados,
-        servicos,
       });
     }
   }
@@ -381,12 +431,10 @@ function adicionarItemCadastrado(
 
         <Select
           id="servicoSelect"
-          value={servicoSelecionado}
+          value={servicoSelecionadoValido}
           onChange={(e) => setServicoSelecionado(Number(e.target.value))}
         >
-          {servicos
-            ?.filter((servico) => servico.tipo === "servico")
-            .map((servico) => (
+          {servicosDisponiveis.map((servico) => (
               <option key={servico.id} value={servico.id}>
                 {servico.servico} - R$ {Number(servico.valor).toFixed(2)}
               </option>
@@ -407,10 +455,11 @@ function adicionarItemCadastrado(
       <ButtonContainer>
         <SubmitButton
           type="button"
+          disabled={!servicoSelecionadoValido}
           onClick={() =>
             adicionarItemCadastrado(
               "servico",
-              servicoSelecionado,
+              servicoSelecionadoValido,
               qtdServicoSelecionada
             )
           }
@@ -464,11 +513,11 @@ function adicionarItemCadastrado(
 
         <Select
           id="pecaSelect"
-          value={pecaSelecionada}
+          value={pecaSelecionadaValida}
           onChange={(e) => setPecaSelecionada(Number(e.target.value))}
         >
             {estoque
-            .map((peca: any) => (
+            .map((peca) => (
               <option key={peca.id} value={peca.id}>
                 {peca.nome} - R$ {Number(peca.valor).toFixed(2)}
               </option>
@@ -489,8 +538,9 @@ function adicionarItemCadastrado(
       <ButtonContainer>
         <SubmitButton
           type="button"
+          disabled={!pecaSelecionadaValida}
           onClick={() =>
-            adicionarItemCadastrado("peca", pecaSelecionada, qtdPecaSelecionada)
+            adicionarItemCadastrado("peca", pecaSelecionadaValida, qtdPecaSelecionada)
           }
         >
           Adicionar peça

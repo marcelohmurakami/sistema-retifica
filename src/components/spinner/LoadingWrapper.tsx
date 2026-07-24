@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
-export const LoadingWrapper = styled.div`
-  min-height: 300px;
+export const LoadingWrapper = styled.div<{ $fullScreen?: boolean }>`
+  min-height: ${({ $fullScreen }) => ($fullScreen ? "100dvh" : "300px")};
   width: 100%;
   display: flex;
   align-items: center;
@@ -11,6 +11,7 @@ export const LoadingWrapper = styled.div`
 `;
 
 export const LoadingText = styled.p`
-  font-size: 1rem;
-  color: ${({ theme}) => theme.colors.primaryDark};
+  font-size: 0.78rem;
+  font-weight: 620;
+  color: ${({ theme}) => theme.colors.textSecondary};
 `;

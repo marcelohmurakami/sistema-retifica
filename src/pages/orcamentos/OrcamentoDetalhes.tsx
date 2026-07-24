@@ -9,8 +9,16 @@ import { ClienteInfo } from "../clientes/ClientesStyled"
 import { formatDate } from "../../utils/formatDate"
 import { ClienteRow, SituacaoSelect } from "./OrcamentoStyled"
 import { useUpdateSituacaoOrcamento } from "../../components/createForms/useOrcamentos";
+import type { OrcamentoType } from "../../models/orcamento";
 
-export function OrcamentoDetalhes ({orcamento, setOrcamentoSelecionado ,setIsCreateOpen, isAdmin}: any) {
+type OrcamentoDetalhesProps = {
+  orcamento: OrcamentoType;
+  setOrcamentoSelecionado: React.Dispatch<React.SetStateAction<OrcamentoType | null>>;
+  setIsCreateOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isAdmin: boolean;
+};
+
+export function OrcamentoDetalhes ({orcamento, setOrcamentoSelecionado ,setIsCreateOpen, isAdmin}: OrcamentoDetalhesProps) {
     const queryClient = useQueryClient();
 
     const { mutate: updateSituacao, isPending } = useUpdateSituacaoOrcamento();
@@ -19,13 +27,14 @@ export function OrcamentoDetalhes ({orcamento, setOrcamentoSelecionado ,setIsCre
         mutationFn: deleteOrcamento,
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ['Orcamento'],
+                queryKey: ['Orcamentos'],
             })
+            toast.success("Orçamento deletado com sucesso")
         },
         onError: () => toast.error("Não foi possível deletar o orçamento")
     })
 
-    function handleUpdate(orcamento: any) {
+    function handleUpdate(orcamento: OrcamentoType) {
         setOrcamentoSelecionado(orcamento);
         setIsCreateOpen(true);
     }

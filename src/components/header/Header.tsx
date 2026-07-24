@@ -2,7 +2,9 @@ import { useState } from "react";
 import {
   FaBars,
   FaCog,
+  FaMoon,
   FaSignOutAlt,
+  FaSun,
 } from "react-icons/fa";
 
 import {
@@ -10,7 +12,10 @@ import {
   LeftSection,
   RightSection,
   Avatar,
+  AvatarFallback,
   UserMenu,
+  UserTrigger,
+  UserText,
   UserInfo,
   UserName,
   UserEmail,
@@ -18,6 +23,7 @@ import {
   DropdownItem,
   Divider,
   MenuButton,
+  ThemeButton,
   TitleGroup,
   AppName,
   PageName,
@@ -26,17 +32,33 @@ import { useGetCurrentUser } from "../../pages/configuracoes/useConfiguracoes";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
+import { useThemeMode } from "../../contexts/ThemeModeContext";
 
 function getPageTitle(pathname: string) {
-  if (pathname.startsWith("/clientes")) return "CLIENTES";
-  if (pathname.startsWith("/ordens-de-serviço")) return "ORDENS DE SERVIÇO";
-  if (pathname.startsWith("/orcamentos")) return "ORÇAMENTOS";
-  if (pathname.startsWith("/servicos")) return "SERVIÇOS E PEÇAS";
-  if (pathname.startsWith("/estoque")) return "ESTOQUE";
-  if (pathname.startsWith("/financeiro")) return "FINANCEIRO";
-  if (pathname.startsWith("/configurações")) return "CONFIGURAÇÕES";
+  if (pathname.startsWith("/clientes")) return "Clientes";
+  if (pathname.startsWith("/ordens-de-serviço")) return "Ordens de serviço";
+  if (pathname.startsWith("/orcamentos")) return "Orçamentos";
+  if (pathname.startsWith("/servi")) return "Serviços e peças";
+  if (pathname.startsWith("/estoque")) return "Estoque";
+  if (pathname.startsWith("/financeiro")) return "Financeiro";
+  if (pathname.startsWith("/anotações")) return "Anotações";
+  if (pathname.startsWith("/relatórios")) return "Relatórios";
+  if (pathname.startsWith("/histórico")) return "Histórico";
+  if (pathname.startsWith("/configurações")) return "Configurações";
 
-  return "SISTEMA";
+  return "Visão geral";
+}
+
+function getInitials(name?: string) {
+  if (!name) return "RE";
+
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 }
 
 type HeaderProps = {
@@ -46,9 +68,11 @@ type HeaderProps = {
 export function Header({ onOpenSidebar }: HeaderProps) {
   const [openMenu, setOpenMenu] = useState(false);
   const { data: user } = useGetCurrentUser();
-  const avatarUrl = user?.user_metadata.avatar_url || "https://i.pravatar.cc/100";
+  const avatarUrl = user?.user_metadata.avatar_url as string | undefined;
+  const userName = (user?.user_metadata.name as string | undefined) || "Usuário";
   const queryClient = useQueryClient();
   const page = useLocation().pathname;
+  const { themeMode, toggleThemeMode } = useThemeMode();
 
   const { signOut } = useAuth();
   const navigate = useNavigate();
@@ -74,20 +98,44 @@ export function Header({ onOpenSidebar }: HeaderProps) {
       </LeftSection>
 
       <RightSection>
-        <UserMenu onClick={() => setOpenMenu(!openMenu)}>
-          <Avatar src={avatarUrl} alt="Avatar do usuário" />
+        <ThemeButton
+          type="button"
+          onClick={toggleThemeMode}
+          aria-label={themeMode === "light" ? "Ativar tema escuro" : "Ativar tema claro"}
+          title={themeMode === "light" ? "Tema escuro" : "Tema claro"}
+        >
+          {themeMode === "light" ? <FaMoon /> : <FaSun />}
+        </ThemeButton>
+
+        <UserMenu>
+          <UserTrigger
+            type="button"
+            onClick={() => setOpenMenu((current) => !current)}
+            aria-expanded={openMenu}
+            aria-haspopup="menu"
+          >
+            {avatarUrl ? (
+              <Avatar src={avatarUrl} alt="" />
+            ) : (
+              <AvatarFallback aria-hidden="true">{getInitials(userName)}</AvatarFallback>
+            )}
+            <UserText>
+              <strong>{userName}</strong>
+              <small>Minha conta</small>
+            </UserText>
+          </UserTrigger>
 
           {openMenu && (
-            <Dropdown>
+            <Dropdown role="menu">
               <UserInfo>
-                <UserName>{user?.user_metadata.name}</UserName>
+                <UserName>{userName}</UserName>
                 <UserEmail>{user?.user_metadata.email}</UserEmail>
               </UserInfo>
 
               <Divider />
 
-              <Link to="/configurações">
-                <DropdownItem>
+              <Link to="/configurações" onClick={() => setOpenMenu(false)}>
+                <DropdownItem role="menuitem">
                   <FaCog />
                   Configurações
                 </DropdownItem>
@@ -95,9 +143,9 @@ export function Header({ onOpenSidebar }: HeaderProps) {
 
               <Divider />
 
-              <DropdownItem $danger onClick={handleSignOut}>
+              <DropdownItem $danger onClick={handleSignOut} role="menuitem">
                 <FaSignOutAlt />
-                Sair
+                Sair com segurança
               </DropdownItem>
             </Dropdown>
           )}

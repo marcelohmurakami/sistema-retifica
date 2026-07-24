@@ -23,6 +23,8 @@ import { formatDate } from "../../utils/formatDate";
 import { getFullDetailsOs } from "./osApi";
 import type { ClienteType } from "../../models/cliente";
 import { Link, useParams } from "react-router";
+import { useAuth } from "../../contexts/AuthContext";
+import { queryKeys } from "../../services/queryKeys";
 
 type TipoItemOS = "servico" | "peca";
 
@@ -53,15 +55,16 @@ export type OSDetalheType = OsType & {
 };
 
 export function OsDetalhes() {
+  const { user } = useAuth();
   const { id } = useParams();
   const osId = Number(id);
 
   const printRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, isError, error } = useQuery<OSDetalheType>({
-    queryKey: ["ordem-servico", osId],
+    queryKey: queryKeys.ordensServico.detail(user?.id, osId),
     queryFn: () => getFullDetailsOs(osId),
-    enabled: !!osId,
+    enabled: !!user?.id && !!osId,
   });
 
   const handlePrint = useReactToPrint({

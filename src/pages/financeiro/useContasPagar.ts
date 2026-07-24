@@ -1,17 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deleteContasPagar, getContasAPagar, getContasAtrasadas } from "./contasPagarApi";
 import { useAuth } from "../../contexts/AuthContext";
+import type { ContaPagar } from "../../models/financeiro";
 
 export function useGetContasPagar() {
-    const user = useAuth()
+    const { user } = useAuth()
 
-    const { data, isLoading: isLoadingContasPagar, error } = useQuery<any>({
+    const { data = [], isLoading: isLoadingContasPagar, error } = useQuery<ContaPagar[]>({
         queryKey: ["ContasPagar", "lista", user?.id],
         queryFn: getContasAPagar,
         enabled: !!user?.id,
     });
-
-    console.log(data)
     
     return { data, isLoadingContasPagar, error };
 };
@@ -23,7 +22,7 @@ export function useGetContasAtrasadas() {
     data,
     isLoading: isLoadingContasAtrasadas,
     error,
-  } = useQuery<any>({
+  } = useQuery<ContaPagar[]>({
     queryKey: ["ContasPagar", "atrasadas", user?.id],
     enabled: !!user?.id,
     queryFn: getContasAtrasadas,
@@ -33,7 +32,6 @@ export function useGetContasAtrasadas() {
 }
 
 export function useDeleteContasPagar() {
-  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
@@ -43,13 +41,6 @@ export function useDeleteContasPagar() {
         queryKey: ["ContasPagar"],
       });
 
-      queryClient.invalidateQueries({
-        queryKey: ["ContasPagar", "lista", user?.id],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["ContasPagar", "atrasadas", user?.id],
-      });
     },
   });
 

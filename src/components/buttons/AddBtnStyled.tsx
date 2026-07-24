@@ -1,54 +1,44 @@
 import styled from "styled-components";
 
 export const BtnFlex = styled.div`
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: flex-end;
 `
 
 export const CreateButton = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.5rem;
-
-  padding: 0.65rem 1.1rem;
-  margin: 1.5rem 0;
-
+  gap: 0.55rem;
+  min-height: 44px;
+  padding: 0.7rem 1rem;
+  margin: 1.1rem 0;
   border: none;
-  border-radius: 10px;
-
-  background: #16a34a;
-  color: white;
-
-  font-size: 0.95rem;
-  font-weight: 500;
-
-  cursor: pointer;
-
-  transition: all 0.15s ease;
+  border-radius: 12px;
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.accent}, ${({ theme }) => theme.colors.accentDark});
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  box-shadow: 0 9px 22px rgba(217, 76, 19, 0.2);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
 
   svg {
-    font-size: 18px;
+    font-size: 15px;
   }
 
   p {
-    font-size: 1.4rem;
-    font-weight: bolder;
+    font-size: 0.82rem;
+    font-weight: 700;
   }
 
   &:hover {
-    background: #15803d;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 13px 28px rgba(217, 76, 19, 0.27);
+    filter: saturate(1.08);
   }
 
   &:active {
     transform: translateY(0);
-    box-shadow: 0 3px 8px rgba(0,0,0,0.10);
-  }
-
-  &:focus-visible {
-    outline: 3px solid rgba(34,197,94,0.4);
-    outline-offset: 2px;
+    box-shadow: 0 6px 14px rgba(217, 76, 19, 0.18);
   }
 `;

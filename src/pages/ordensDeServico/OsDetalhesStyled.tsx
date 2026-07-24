@@ -1,7 +1,8 @@
 import styled from "styled-components"
 
 export const DetalhesContainer = styled.div`
-  width: 100%;
+  width: min(100%, ${({ theme }) => theme.layout.containerMax});
+  margin: 0 auto;
   min-height: 100%;
   padding: clamp(1.2rem, 3vw, 2rem);
   background: ${({ theme }) => theme.colors.background};
@@ -85,15 +86,16 @@ export const FlexButtons = styled.div`
 
 export const PrintButton = styled.button`
   border: none;
-  background: #2563eb;
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.accent}, ${({ theme }) => theme.colors.accentDark});
   color: #fff;
   padding: 0.9rem 1.35rem;
   border-radius: 10px;
-  font-size: 1.25rem;
+  font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
   transition: 0.2s ease;
   min-height: 40px;
+  box-shadow: 0 9px 22px rgba(217, 76, 19, 0.2);
   white-space: normal;
   text-align: center;
   line-height: 1.2;
@@ -114,12 +116,12 @@ export const PrintButton = styled.button`
 `
 
 export const BackButton = styled.button`
-  border: none;
-  background: #2563eb;
-  color: #fff;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.textPrimary};
   padding: 0.9rem 1.35rem;
   border-radius: 10px;
-  font-size: 1.25rem;
+  font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
   transition: 0.2s ease;
@@ -163,6 +165,13 @@ export const InfoCard = styled.div`
   flex-direction: column;
   gap: 0.6rem;
   min-width: 0;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, ${({ theme }) => theme.colors.accent} 22%, ${({ theme }) => theme.colors.border});
+    box-shadow: ${({ theme }) => theme.shadow.md};
+    transform: translateY(-2px);
+  }
 
   @media (max-width: 640px) {
     grid-column: auto !important;
@@ -170,7 +179,7 @@ export const InfoCard = styled.div`
 `
 
 export const InfoLabel = styled.span`
-  font-size: clamp(1rem, 2.4vw, 1.15rem);
+  font-size: clamp(0.67rem, 2vw, 0.75rem);
   font-weight: 700;
   color: ${({ theme }) => theme.colors.textSecondary};
   text-transform: uppercase;
@@ -179,7 +188,7 @@ export const InfoLabel = styled.span`
 `
 
 export const InfoValue = styled.span`
-  font-size: clamp(1.25rem, 3vw, 1.4rem);
+  font-size: clamp(0.85rem, 2.5vw, 0.95rem);
   font-weight: 500;
   color: ${({ theme }) => theme.colors.textPrimary};
   word-break: break-word;

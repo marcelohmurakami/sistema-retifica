@@ -10,6 +10,7 @@ export function useInsertClientes(setIsCreateOpen: React.Dispatch<React.SetState
     onSuccess: () => {
         toast.success("Cliente cadastrado com sucesso");
         queryClient.invalidateQueries({ queryKey: ["cliente"] });
+        queryClient.invalidateQueries({ queryKey: ["clientes"] });
         reset();
         setIsCreateOpen(false);
     },

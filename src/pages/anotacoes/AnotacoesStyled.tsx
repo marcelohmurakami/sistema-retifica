@@ -1,7 +1,9 @@
 import styled from "styled-components";
 
 export const PageContainer = styled.main`
-  width: 100%;
+  width: min(100%, ${({ theme }) => theme.layout.containerMax});
+  min-height: calc(100dvh - ${({ theme }) => theme.layout.headerHeight});
+  margin: 0 auto;
   padding: clamp(16px, 4vw, 24px);
   display: flex;
   flex-direction: column;
@@ -30,30 +32,31 @@ export const HeaderText = styled.div`
 export const Title = styled.h1`
   font-size: clamp(24px, 7vw, 28px);
   font-weight: 700;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.primaryDark};
   margin: 0;
   line-height: 1.15;
 `;
 
 export const Subtitle = styled.p`
   font-size: clamp(14px, 4vw, 16px);
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.textSecondary};
   margin: 0;
   line-height: 1.45;
 `;
 
 export const NewButton = styled.button`
   border: none;
-  background: #2563eb;
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.accent}, ${({ theme }) => theme.colors.accentDark});
   color: #ffffff;
   padding: 11px 16px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s;
 
   &:hover {
-    background: #1d4ed8;
+    box-shadow: 0 10px 24px rgba(217, 76, 19, 0.24);
+    transform: translateY(-1px);
   }
 
   @media (max-width: 640px) {
@@ -66,7 +69,7 @@ export const NewButton = styled.button`
 export const Tabs = styled.div`
   display: flex;
   gap: 8px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 
   @media (max-width: 480px) {
     display: grid;
@@ -81,19 +84,19 @@ export const TabButton = styled.button<{ $active?: boolean }>`
   padding: 12px 16px;
   font-size: 14px;
   font-weight: 600;
-  color: ${({ $active }) => ($active ? "#2563eb" : "#6b7280")};
-  border-bottom: 3px solid ${({ $active }) => ($active ? "#2563eb" : "transparent")};
+  color: ${({ $active, theme }) => ($active ? theme.colors.accent : theme.colors.textSecondary)};
+  border-bottom: 3px solid ${({ $active, theme }) => ($active ? theme.colors.accent : "transparent")};
   cursor: pointer;
 
   &:hover {
-    color: #2563eb;
+    color: ${({ theme }) => theme.colors.accent};
   }
 
   @media (max-width: 480px) {
     min-height: 44px;
-    border: 1px solid ${({ $active }) => ($active ? "#2563eb" : "#e5e7eb")};
-    border-radius: 8px;
-    background: ${({ $active }) => ($active ? "#eff6ff" : "#ffffff")};
+    border: 1px solid ${({ $active, theme }) => ($active ? theme.colors.accent : theme.colors.border)};
+    border-radius: 11px;
+    background: ${({ $active, theme }) => ($active ? theme.colors.accentSoft : theme.colors.surface)};
     font-size: 15px;
   }
 `;
@@ -109,16 +112,17 @@ export const SearchInput = styled.input`
   width: 100%;
   max-width: 420px;
   height: 42px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 13px;
   padding: 0 14px;
   font-size: 14px;
   outline: none;
-  background: #ffffff;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.textPrimary};
 
   &:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    border-color: ${({ theme }) => theme.colors.accent};
+    box-shadow: 0 0 0 4px color-mix(in srgb, ${({ theme }) => theme.colors.accent} 12%, transparent);
   }
 `;
 
@@ -137,7 +141,7 @@ export const SectionHeader = styled.div`
 
   h2 {
     font-size: 18px;
-    color: #111827;
+    color: ${({ theme }) => theme.colors.primaryDark};
     margin: 0;
   }
 
@@ -164,13 +168,14 @@ export const ChecklistItem = styled.div<{ $done?: boolean }>`
   gap: 12px;
   min-height: 54px;
   padding: 12px 14px;
-  background: ${({ $done }) => ($done ? "#f9fafb" : "#ffffff")};
-  border: 1px solid ${({ $done }) => ($done ? "#e5e7eb" : "#dbeafe")};
-  border-left: 4px solid ${({ $done }) => ($done ? "#9ca3af" : "#2563eb")};
-  border-radius: 8px;
+  background: ${({ $done, theme }) => ($done ? theme.colors.background : theme.colors.surface)};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-left: 4px solid ${({ $done, theme }) => ($done ? theme.colors.textMuted : theme.colors.accent)};
+  border-radius: 13px;
+  box-shadow: ${({ theme }) => theme.shadow.sm};
 
   span {
-    color: ${({ $done }) => ($done ? "#9ca3af" : "#111827")};
+    color: ${({ $done, theme }) => ($done ? theme.colors.textMuted : theme.colors.primaryDark)};
     text-decoration: ${({ $done }) => ($done ? "line-through" : "none")};
     font-weight: 500;
   }
@@ -179,7 +184,7 @@ export const ChecklistItem = styled.div<{ $done?: boolean }>`
     width: 18px;
     height: 18px;
     cursor: pointer;
-    accent-color: #2563eb;
+    accent-color: ${({ theme }) => theme.colors.accent};
   }
 
   @media (max-width: 720px) {
@@ -213,9 +218,9 @@ export const NotesGrid = styled.div`
 `;
 
 export const NoteCard = styled.article`
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 16px;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -223,8 +228,9 @@ export const NoteCard = styled.article`
   transition: 0.2s;
 
   &:hover {
-    border-color: #93c5fd;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    border-color: color-mix(in srgb, ${({ theme }) => theme.colors.accent} 32%, ${({ theme }) => theme.colors.border});
+    box-shadow: ${({ theme }) => theme.shadow.md};
+    transform: translateY(-2px);
   }
 
   p {
@@ -244,7 +250,7 @@ export const CardHeader = styled.div`
 
   h3 {
     font-size: 20px;
-    color: #111827;
+    color: ${({ theme }) => theme.colors.primaryDark};
     margin: 0;
     overflow-wrap: anywhere;
   }
@@ -262,7 +268,7 @@ export const CardHeader = styled.div`
 export const Description = styled.p`
   font-size: 20px;
   line-height: 1.5;
-  color: #4b5563;
+  color: ${({ theme }) => theme.colors.textSecondary};
   margin: 0;
 `;
 
@@ -277,26 +283,26 @@ export const NoteItem = styled.div`
   justify-content: space-between;
   gap: 10px;
   font-size: 14px;
-  color: #374151;
+  color: ${({ theme }) => theme.colors.textPrimary};
   padding-bottom: 8px;
-  border-bottom: 1px dashed #e5e7eb;
+  border-bottom: 1px dashed ${({ theme }) => theme.colors.border};
 
   strong {
-    color: #111827;
+    color: ${({ theme }) => theme.colors.primaryDark};
     white-space: nowrap;
   }
 `;
 
 export const TotalBox = styled.div`
   margin-top: 4px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 8px;
+  background: ${({ theme }) => theme.colors.accentSoft};
+  border: 1px solid color-mix(in srgb, ${({ theme }) => theme.colors.accent} 22%, ${({ theme }) => theme.colors.border});
+  border-radius: 11px;
   padding: 10px 12px;
   display: flex;
   justify-content: space-between;
   font-weight: 700;
-  color: #1e3a8a;
+  color: ${({ theme }) => theme.colors.accentDark};
 `;
 
 export const Priority = styled.span<{ $priority: "baixo" | "medio" | "alto" }>`
@@ -335,9 +341,9 @@ export const CardActions = styled.div`
 `;
 
 export const IconButton = styled.button`
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  color: #374151;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.textPrimary};
   height: 34px;
   padding: 0 10px;
   border-radius: 8px;
@@ -345,33 +351,33 @@ export const IconButton = styled.button`
   font-weight: 600;
 
   &:hover {
-    background: #f3f4f6;
+    background: ${({ theme }) => theme.colors.background};
   }
 `;
 
 export const EmptyState = styled.div`
   min-height: 180px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 8px;
-  background: #f8fafc;
+  border: 1px dashed ${({ theme }) => theme.colors.border};
+  border-radius: 16px;
+  background: ${({ theme }) => theme.colors.surface};
   display: grid;
   place-items: center;
   text-align: center;
-  color: #64748b;
+  color: ${({ theme }) => theme.colors.textSecondary};
   font-weight: 500;
 `;
 
 export const EditButton = styled.button`
   width: 34px;
   height: 34px;
-  border: 1px solid #bfdbfe;
-  border-radius: 8px;
-  background: #eff6ff;
-  color: #2563eb;
+  border: 1px solid color-mix(in srgb, ${({ theme }) => theme.colors.info} 25%, ${({ theme }) => theme.colors.border});
+  border-radius: 10px;
+  background: color-mix(in srgb, ${({ theme }) => theme.colors.info} 8%, transparent);
+  color: ${({ theme }) => theme.colors.info};
   cursor: pointer;
 
   &:hover {
-    background: #dbeafe;
+    background: color-mix(in srgb, ${({ theme }) => theme.colors.info} 15%, transparent);
   }
 
   @media (max-width: 420px) {
@@ -384,14 +390,14 @@ export const EditButton = styled.button`
 export const DeleteButton = styled.button`
   width: 34px;
   height: 34px;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  background: #fef2f2;
-  color: #dc2626;
+  border: 1px solid color-mix(in srgb, ${({ theme }) => theme.colors.error} 25%, ${({ theme }) => theme.colors.border});
+  border-radius: 10px;
+  background: color-mix(in srgb, ${({ theme }) => theme.colors.error} 8%, transparent);
+  color: ${({ theme }) => theme.colors.error};
   cursor: pointer;
 
   &:hover {
-    background: #fee2e2;
+    background: color-mix(in srgb, ${({ theme }) => theme.colors.error} 15%, transparent);
   }
 
   @media (max-width: 420px) {

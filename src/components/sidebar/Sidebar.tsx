@@ -1,7 +1,30 @@
-import { SidebarStyled, LogoStyled, NavStyled, NavItemStyled } from "./SidebarStyled";
-import { FaHome, FaUsers, FaClipboardList, FaMoneyBill, FaCog, FaTools, FaBox, FaFileInvoiceDollar, FaFileAlt, FaChartBar, FaHistory } from "react-icons/fa";
-import logo from '../../assets/logo-print.jpg'
-import { Link } from "react-router";
+import {
+  SidebarStyled,
+  BrandBlock,
+  LogoStyled,
+  CloseButton,
+  NavStyled,
+  NavGroupLabel,
+  NavItemStyled,
+  SidebarFooter,
+  StatusDot,
+  StatusText,
+} from "./SidebarStyled";
+import {
+  FaHome,
+  FaUsers,
+  FaClipboardList,
+  FaMoneyBill,
+  FaCog,
+  FaTools,
+  FaBox,
+  FaFileInvoiceDollar,
+  FaFileAlt,
+  FaChartBar,
+  FaHistory,
+  FaTimes,
+} from "react-icons/fa";
+import logo from "../../assets/logo-print.jpg";
 import { useEmpresaAtual } from "../empresas/useEmpresas";
 
 type SidebarProps = {
@@ -15,90 +38,85 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   return (
     <SidebarStyled $isOpen={isOpen}>
-      <LogoStyled src={logo} alt="Logo da retífica" />
+      <BrandBlock>
+        <LogoStyled src={logo} alt="Retífica Estação" />
+        <CloseButton type="button" onClick={onClose} aria-label="Fechar menu">
+          <FaTimes />
+        </CloseButton>
+      </BrandBlock>
 
-      <NavStyled>
-        <Link to="/" onClick={onClose}>
-          <NavItemStyled>
-            <FaHome />
-            <span>Home</span>
-          </NavItemStyled>
-        </Link>
+      <NavStyled aria-label="Navegação principal">
+        <NavGroupLabel>Operação</NavGroupLabel>
 
-        <Link to="/clientes" onClick={onClose}>
-          <NavItemStyled>
-            <FaUsers />
-            <span>Clientes</span>
-          </NavItemStyled>
-        </Link>
+        <NavItemStyled to="/" end onClick={onClose}>
+          <FaHome />
+          <span>Visão geral</span>
+        </NavItemStyled>
 
-        <Link to="/ordens-de-serviço" onClick={onClose}>
-          <NavItemStyled>
-            <FaClipboardList />
-            <span>Ordens de serviço</span>
-          </NavItemStyled>
-        </Link>
+        <NavItemStyled to="/clientes" onClick={onClose}>
+          <FaUsers />
+          <span>Clientes</span>
+        </NavItemStyled>
 
-        <Link to="/orcamentos" onClick={onClose}>
-          <NavItemStyled>
-            <FaFileInvoiceDollar />
-            <span>Orçamentos</span>
-          </NavItemStyled>
-        </Link>
+        <NavItemStyled to="/ordens-de-serviço" onClick={onClose}>
+          <FaClipboardList />
+          <span>Ordens de serviço</span>
+        </NavItemStyled>
 
-        <Link to="/serviços" onClick={onClose}>
-          <NavItemStyled>
-            <FaTools />
-            <span>Serviços</span>
-          </NavItemStyled>
-        </Link>
+        <NavItemStyled to="/orcamentos" onClick={onClose}>
+          <FaFileInvoiceDollar />
+          <span>Orçamentos</span>
+        </NavItemStyled>
 
-        <Link to="/estoque" onClick={onClose}>
-          <NavItemStyled>
-            <FaBox />
-            <span>Estoque</span>
-          </NavItemStyled>
-        </Link>
+        <NavItemStyled to="/serviços" onClick={onClose}>
+          <FaTools />
+          <span>Serviços e peças</span>
+        </NavItemStyled>
+
+        <NavItemStyled to="/estoque" onClick={onClose}>
+          <FaBox />
+          <span>Estoque</span>
+        </NavItemStyled>
+
+        <NavGroupLabel>Gestão</NavGroupLabel>
 
         {isAdmin && (
-          <Link to="/financeiro" onClick={onClose}>
-            <NavItemStyled>
-              <FaMoneyBill />
-              <span>Financeiro</span>
-            </NavItemStyled>
-          </Link>
+          <NavItemStyled to="/financeiro" onClick={onClose}>
+            <FaMoneyBill />
+            <span>Financeiro</span>
+          </NavItemStyled>
         )}
 
-        <Link to="/anotações" onClick={onClose}>
-          <NavItemStyled>
-            <FaFileAlt />
-            <span>Anotações</span>
-          </NavItemStyled>
-        </Link>
+        <NavItemStyled to="/anotações" onClick={onClose}>
+          <FaFileAlt />
+          <span>Anotações</span>
+        </NavItemStyled>
 
-        {isAdmin && 
-        <Link to="/relatórios" onClick={onClose}>
-          <NavItemStyled>
+        {isAdmin && (
+          <NavItemStyled to="/relatórios" onClick={onClose}>
             <FaChartBar />
             <span>Relatórios</span>
           </NavItemStyled>
-        </Link>}
-        
+        )}
 
-        <Link to="/histórico" onClick={onClose}>
-          <NavItemStyled>
-            <FaHistory />
-            <span>Histórico</span>
-          </NavItemStyled>
-        </Link>
+        <NavItemStyled to="/histórico" onClick={onClose}>
+          <FaHistory />
+          <span>Histórico</span>
+        </NavItemStyled>
 
-        <Link to="/configurações" onClick={onClose}>
-          <NavItemStyled>
-            <FaCog />
-            <span>Configurações</span>
-          </NavItemStyled>
-        </Link>
+        <NavItemStyled to="/configurações" onClick={onClose}>
+          <FaCog />
+          <span>Configurações</span>
+        </NavItemStyled>
       </NavStyled>
+
+      <SidebarFooter>
+        <StatusDot />
+        <StatusText>
+          <strong>Sistema operacional</strong>
+          <span>Dados sincronizados com segurança</span>
+        </StatusText>
+      </SidebarFooter>
     </SidebarStyled>
   );
 }

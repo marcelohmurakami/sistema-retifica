@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import {
   CancelButton,
   CloseButton,
@@ -15,38 +14,32 @@ import {
 } from "./CreateAnotacoesStyled";
 import { useForm } from "react-hook-form";
 import { useEditAnotacoesGerais, useInsertAnotacoesGerais } from "./useAnotacoes";
+import type { AnotacaoGeral, AnotacaoGeralInput } from "../../models/anotacao";
 
 export function CreateAnotacaoGeral({
   open,
   onClose,
   tarefaParaEditar = null,
-}: any) {
+}: {
+  open: boolean;
+  onClose: () => void;
+  tarefaParaEditar?: AnotacaoGeral | null;
+}) {
   const { mutate: createAnotacao, isPending } = useInsertAnotacoesGerais();
   const { mutate: editAnotacao, isPending: isEditing } = useEditAnotacoesGerais();
 
-  const { register, reset, handleSubmit } = useForm();
-
-  useEffect(() => {
-    if (tarefaParaEditar) {
-    reset({
-        titulo: tarefaParaEditar?.titulo ?? "",
-        descricao: tarefaParaEditar?.descricao ?? "",
-        cliente: tarefaParaEditar?.cliente ?? "",
-    });
-    } else {
-    reset({
-        titulo: "",
-        descricao: "",
-        cliente: "",
-    });
-    }
-  }, [tarefaParaEditar, reset]);
+  const { register, handleSubmit } = useForm<AnotacaoGeralInput>({
+    defaultValues: {
+      titulo: tarefaParaEditar?.titulo ?? "",
+      descricao: tarefaParaEditar?.descricao ?? "",
+      cliente: tarefaParaEditar?.cliente ?? "",
+    },
+  });
 
   if (!open) return null;
 
-  function onSubmit(data: any) {
+  function onSubmit(data: AnotacaoGeralInput) {
     if (tarefaParaEditar) {
-        console.log("estou sendo chamado")
         editAnotacao({
             id: tarefaParaEditar.id,
             ...data,

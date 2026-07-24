@@ -1,7 +1,7 @@
 import { getEmpresaIdAtual } from "../../components/empresas/empresasApi";
 import { supabase } from "../../services/supabaseApi";
 
-type PeriodoRelatorio =
+export type PeriodoRelatorio =
   | "mes_atual"
   | "ultimos_3_meses"
   | "ultimos_6_meses"
@@ -52,87 +52,85 @@ function getPeriodoRelatorio(periodo: PeriodoRelatorio): PeriodoFiltro {
   };
 }
 
-function aplicarFiltroPeriodo<T extends { gte: any; lt: any }>(
-  query: T,
-  colunaData: string,
-  periodo: PeriodoFiltro
-) {
-  let queryFiltrada = query.gte(colunaData, periodo.inicio);
+export type OSResumoRelatorio = { valorServico: number | string | null };
+export type MovimentoResumoRelatorio = { valor: number | string | null };
+export type RankingRelatorio = { nome: string; quantidade: number; total: number };
 
-  if (periodo.fim) {
-    queryFiltrada = queryFiltrada.lt(colunaData, periodo.fim);
-  }
+function normalizarRanking(
+  data: unknown,
+  nomeCampo: "descricao" | "cliente",
+  quantidadeCampo: "quantidade_total" | "total_os",
+): RankingRelatorio[] {
+  if (!Array.isArray(data)) return [];
 
-  return queryFiltrada;
+  return data.map((item) => {
+    const row = item as Record<string, unknown>;
+    return {
+      nome: String(row[nomeCampo] ?? "Sem identificação"),
+      quantidade: Number(row[quantidadeCampo] ?? 0),
+      total: Number(row.faturamento_total ?? 0),
+    };
+  });
 }
 
 export async function getFaturamentoOS(periodo: PeriodoRelatorio) {
   const empresaId = await getEmpresaIdAtual();
   const periodoFiltro = getPeriodoRelatorio(periodo);
 
-  const query = supabase
+  let query = supabase
     .from("OrdensDeServiço")
-    .select(`
-      *,
-      Clientes!inner (*)
-    `)
-    .eq("empresa_id", empresaId);
+    .select("valorServico")
+    .eq("empresa_id", empresaId)
+    .gte("dataServico", periodoFiltro.inicio);
 
-  const { data, error } = await aplicarFiltroPeriodo(
-    query,
-    "dataServico",
-    periodoFiltro
-  );
+  if (periodoFiltro.fim) query = query.lt("dataServico", periodoFiltro.fim);
+  const { data, error } = await query;
 
   if (error) {
     throw new Error("Erro ao buscar faturamento: " + error.message);
   }
 
-  return data ?? [];
+  return (data ?? []) as OSResumoRelatorio[];
 }
 
 export async function getRecebimentosPeriodo(periodo: PeriodoRelatorio) {
   const empresaId = await getEmpresaIdAtual();
   const periodoFiltro = getPeriodoRelatorio(periodo);
 
-  const query = supabase
+  let query = supabase
     .from("PagamentoRecebido")
-    .select("*")
-    .eq("empresa_id", empresaId);
+    .select("valor")
+    .eq("empresa_id", empresaId)
+    .gte("dataRecebimento", periodoFiltro.inicio);
 
-  const { data, error } = await aplicarFiltroPeriodo(
-    query,
-    "dataRecebimento",
-    periodoFiltro
-  );
+  if (periodoFiltro.fim) query = query.lt("dataRecebimento", periodoFiltro.fim);
+  const { data, error } = await query;
 
   if (error) {
     throw new Error("Erro ao buscar recebimentos: " + error.message);
   }
 
-  return data ?? [];
+  return (data ?? []) as MovimentoResumoRelatorio[];
 }
 
 export async function getPagamentosQuitadosPeriodo(periodo: PeriodoRelatorio) {
   const empresaId = await getEmpresaIdAtual();
   const periodoFiltro = getPeriodoRelatorio(periodo);
 
-  const query = supabase
+  let query = supabase
     .from("PagamentoQuitado")
-    .select("*")
-    .eq("empresa_id", empresaId);
+    .select("valor")
+    .eq("empresa_id", empresaId)
+    .gte("dataPagamento", periodoFiltro.inicio);
 
-  const { data, error } = await aplicarFiltroPeriodo(
-    query,
-    "dataPagamento",
-    periodoFiltro
-  );
+  if (periodoFiltro.fim) query = query.lt("dataPagamento", periodoFiltro.fim);
+  const { data, error } = await query;
 
   if (error) {
     throw new Error("Erro ao buscar pagamentos: " + error.message);
   }
 
-  return data ?? [];
+  return (data ?? []) as MovimentoResumoRelatorio[];
 }
 
 export async function getTopServicosFaturamento(periodo: PeriodoRelatorio) {
@@ -148,11 +146,7 @@ export async function getTopServicosFaturamento(periodo: PeriodoRelatorio) {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map((item: any) => ({
-    nome: item.descricao,
-    quantidade: Number(item.quantidade_total || 0),
-    total: Number(item.faturamento_total || 0),
-  }));
+  return normalizarRanking(data, "descricao", "quantidade_total");
 }
 
 export async function getTopPecasFaturamento(periodo: PeriodoRelatorio) {
@@ -168,11 +162,7 @@ export async function getTopPecasFaturamento(periodo: PeriodoRelatorio) {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map((item: any) => ({
-    nome: item.descricao,
-    quantidade: Number(item.quantidade_total || 0),
-    total: Number(item.faturamento_total || 0),
-  }));
+  return normalizarRanking(data, "descricao", "quantidade_total");
 }
 
 export async function getTopClientesFaturamento(periodo: PeriodoRelatorio) {
@@ -188,11 +178,7 @@ export async function getTopClientesFaturamento(periodo: PeriodoRelatorio) {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map((item: any) => ({
-    nome: item.cliente,
-    quantidade: Number(item.total_os || 0),
-    total: Number(item.faturamento_total || 0),
-  }));
+  return normalizarRanking(data, "cliente", "total_os");
 }
 
 export async function getTopClientesQuantidade(periodo: PeriodoRelatorio) {
@@ -208,11 +194,7 @@ export async function getTopClientesQuantidade(periodo: PeriodoRelatorio) {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map((item: any) => ({
-    nome: item.cliente,
-    quantidade: Number(item.total_os || 0),
-    total: Number(item.faturamento_total || 0),
-  }));
+  return normalizarRanking(data, "cliente", "total_os");
 }
 
 export async function getTopServicosQuantidade(periodo: PeriodoRelatorio) {
@@ -228,9 +210,5 @@ export async function getTopServicosQuantidade(periodo: PeriodoRelatorio) {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map((item: any) => ({
-    nome: item.descricao,
-    quantidade: Number(item.quantidade_total || 0),
-    total: Number(item.faturamento_total || 0),
-  }));
+  return normalizarRanking(data, "descricao", "quantidade_total");
 }

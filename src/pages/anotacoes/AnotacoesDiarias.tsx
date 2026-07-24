@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Spinner } from "../../components/spinner/Spinner";
 import { Checklist, ChecklistItem, NewButton, Priority, Section, SectionHeader } from "./AnotacoesStyled";
 import { useDeleteAnotacoesDiarias, useGetAnotacoesDiarias, useUpdateStatusAnotacaoDiaria } from "./useAnotacoes";
@@ -6,6 +6,7 @@ import { CreateAnotacaoDiaria } from "./CreateAnotacaoDiaria";
 import { ActionButton, ChecklistActions, DeleteButton } from "./CreateAnotacoesStyled";
 import { FaPen, FaTrash } from "react-icons/fa";
 import { useEmpresaAtual } from "../../components/empresas/useEmpresas";
+import type { AnotacaoDiaria } from "../../models/anotacao";
 
 export function AnotacoesDiarias() {
   const { data: user } = useEmpresaAtual();
@@ -15,43 +16,16 @@ export function AnotacoesDiarias() {
   const { mutate: mutateDelete, isPending: isDeleting } = useDeleteAnotacoesDiarias()
   const { mutate: updateStatus, isPending: isUpdatingStatus } = useUpdateStatusAnotacaoDiaria();
 
-  const [tarefas, setTarefas] = useState<any[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [tarefaSelecionada, setTarefaSelecionada] = useState(null);
+  const [tarefaSelecionada, setTarefaSelecionada] = useState<AnotacaoDiaria | null>(null);
 
-  useEffect(() => {
-    setTarefas(anotacoes_diarias ?? []);
-  }, [anotacoes_diarias]);
-
-  function toggleTarefa(tarefaAtual: any) {
+  function toggleTarefa(tarefaAtual: AnotacaoDiaria) {
     const concluida = !tarefaAtual.concluida;
-
-    setTarefas((tarefas: any) =>
-      tarefas?.map((tarefa: any) =>
-        tarefa.id === tarefaAtual.id
-          ? { ...tarefa, concluida }
-          : tarefa
-      )
-    );
-
-    updateStatus(
-      { id: tarefaAtual.id, concluida },
-      {
-        onError: () => {
-          setTarefas((tarefas: any) =>
-            tarefas?.map((tarefa: any) =>
-              tarefa.id === tarefaAtual.id
-                ? { ...tarefa, concluida: tarefaAtual.concluida }
-                : tarefa
-            )
-          );
-        },
-      }
-    );
+    updateStatus({ id: tarefaAtual.id, concluida });
   }
 
-  function handleDelete(id: any) {
+  function handleDelete(id: number) {
     const confirmacao = window.confirm("Tem certeza que deseja deletar esta tarefa?");
 
     if (!confirmacao) {
@@ -77,7 +51,7 @@ export function AnotacoesDiarias() {
       </SectionHeader>
 
       <Checklist>
-        {tarefas?.map((tarefa: any) => (
+        {anotacoes_diarias.map((tarefa) => (
           <ChecklistItem key={tarefa.id} $done={tarefa.concluida}>
             <input
               type="checkbox"
@@ -122,16 +96,18 @@ export function AnotacoesDiarias() {
         ))}
       </Checklist>
 
-      <CreateAnotacaoDiaria
-        open={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-      />
+      {isCreateOpen && (
+        <CreateAnotacaoDiaria open onClose={() => setIsCreateOpen(false)} />
+      )}
 
-      <CreateAnotacaoDiaria
-        open={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
-        tarefaParaEditar={tarefaSelecionada}
-      />
+      {isEditOpen && tarefaSelecionada && (
+        <CreateAnotacaoDiaria
+          key={tarefaSelecionada.id}
+          open
+          onClose={() => setIsEditOpen(false)}
+          tarefaParaEditar={tarefaSelecionada}
+        />
+      )}
     </Section>
   );
 }

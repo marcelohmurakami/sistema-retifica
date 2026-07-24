@@ -3,7 +3,7 @@ import { ClientesHeader, ClientesInfos, ClientesStyled, ClientesTable, HeaderIte
 import { Cliente } from "../../components/cliente/Cliente";
 import { AddBtn } from "../../components/buttons/AddBtn";
 import { useState } from "react";
-import { CreateClienteModal } from "../../components/createForms/CreateClienteModal";
+import { AppModal } from "../../components/modal/AppModal";
 import type { ClienteType } from "../../models/cliente"
 import { CreateCliente } from "../../components/createForms/CreateCliente";
 import { LoadingContainer } from "../../components/spinner/LoadingContainer";
@@ -12,6 +12,7 @@ import { useGetClientes } from "../../components/createForms/useGetOs";
 import { FooterInfo, OSTableFooter, PaginationButton, PaginationControls, SearchBox, SearchIcon, SearchInput, SearchWrapper } from "../ordensDeServico/OsStyled";
 import { PAGE_SIZE } from "../../utils/pageSize";
 import { useEmpresaAtual } from "../../components/empresas/useEmpresas";
+import { FaSearch } from "react-icons/fa";
 
 export function Clientes () {
     const [sortBy, setSortBy] = useState("id");
@@ -22,7 +23,7 @@ export function Clientes () {
     const { data: user } = useEmpresaAtual();
     const isAdmin = user?.role === "admin" || user?.role === "financeiro_master" ? true : false;
 
-    let { clientes: data, isLoadingClientes: isLoading, count } = useGetClientes(sortBy, page, searchInput);
+    const { clientes: data, isLoadingClientes: isLoading, count } = useGetClientes(sortBy, page, searchInput);
 
     const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
     const [clienteSelecionado, setClienteSelecionado] = useState<ClienteType | OsType | null>(null);
@@ -36,7 +37,7 @@ export function Clientes () {
         const half = Math.floor(MAX_VISIBLE_PAGES / 2);
 
         let start = Math.max(page - half, 1);
-        let end = Math.min(start + MAX_VISIBLE_PAGES - 1, numberOfPages);
+        const end = Math.min(start + MAX_VISIBLE_PAGES - 1, numberOfPages);
 
         if (end - start + 1 < MAX_VISIBLE_PAGES) {
             start = Math.max(end - MAX_VISIBLE_PAGES + 1, 1);
@@ -56,7 +57,7 @@ export function Clientes () {
         <MainContent>
             <SearchWrapper>
                 <SearchBox>
-                    <SearchIcon>🔎</SearchIcon>
+                    <SearchIcon><FaSearch /></SearchIcon>
                     <SearchInput
                         type="text"
                         placeholder="Buscar por cliente..."
@@ -72,8 +73,8 @@ export function Clientes () {
                 </SearchBox>
             </SearchWrapper>
             <ClientesStyled>
-                <ClientesInfos>Todos os clientes</ClientesInfos>
-                <ClientesInfos>Ordernar por: {isSortByOpen && <SelectStyled value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                <ClientesInfos>Clientes cadastrados</ClientesInfos>
+                <ClientesInfos>Ordenar por {isSortByOpen && <SelectStyled value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                     <option value="id">ID</option>
                     <option value="cliente-asc">Nome (A-Z)</option>
                     <option value="cliente-desc">Nome (Z-A)</option>
@@ -92,13 +93,13 @@ export function Clientes () {
 
             {!isLoading && data?.map((cliente) => {
                 return (
-                    <Cliente cliente={cliente} setIsCreateOpen={setIsCreateOpen} setClienteSelecionado={setClienteSelecionado} isAdmin={isAdmin} />
+                    <Cliente key={cliente.id} cliente={cliente} setIsCreateOpen={setIsCreateOpen} setClienteSelecionado={setClienteSelecionado} isAdmin={isAdmin} />
                 )
             })}
 
             <OSTableFooter>
                 <FooterInfo>
-                {`Mostrando ${(page - 1) * PAGE_SIZE + 1}–${PAGE_SIZE * page <= count ? PAGE_SIZE * page : count} de ${count} clientes`}
+                {`Mostrando ${count === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}–${Math.min(PAGE_SIZE * page, count)} de ${count} clientes`}
                 </FooterInfo>
 
                 <PaginationControls>
@@ -110,15 +111,15 @@ export function Clientes () {
                     ‹
                     </PaginationButton>
                     {visiblePages.map((pagina) => (
-                        <PaginationButton value={pagina} onClick={() => setPage(pagina)} $active={pagina === page}>
+                        <PaginationButton key={pagina} value={pagina} onClick={() => setPage(pagina)} $active={pagina === page}>
                             {pagina}
                         </PaginationButton>
                     ))}
-                    <PaginationButton onClick={() => setPage(page + 1)} disabled={page === numberOfPages}>
+                    <PaginationButton onClick={() => setPage(page + 1)} disabled={page >= numberOfPages}>
                     ›
                     </PaginationButton>
 
-                    <PaginationButton onClick={() => setPage(numberOfPages)} disabled={page === numberOfPages}>
+                    <PaginationButton onClick={() => setPage(numberOfPages)} disabled={page >= numberOfPages}>
                     »
                     </PaginationButton>
                 </PaginationControls>
@@ -129,8 +130,9 @@ export function Clientes () {
                 <AddBtn setIsCreateOpen={setIsCreateOpen} novo={"Cadastrar novo cliente"} />
             )}
 
-            <CreateClienteModal
-                open={isCreateOpen}
+            {isCreateOpen && (
+              <AppModal
+                open
                 onClose={() => {
                     setIsCreateOpen(false);
                     setClienteSelecionado(null);
@@ -140,7 +142,8 @@ export function Clientes () {
                     setIsCreateOpen={setIsCreateOpen}
                     clienteParaEditar={clienteSelecionado}
                 />
-            </CreateClienteModal>
+              </AppModal>
+            )}
         </MainContent>
     )
 }

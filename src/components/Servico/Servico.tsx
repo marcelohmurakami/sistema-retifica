@@ -5,6 +5,7 @@ import { ClienteInfo } from "../cliente/ClienteStyled";
 import { deleteServicos } from "../../pages/serviços/servicosApi";
 import { handleDelete } from "../../utils/handleDelete";
 import { ServicoRow } from "./ServicoStyled";
+import toast from "react-hot-toast";
 
 type ServicosProps = {
     servico: ServicoType,
@@ -21,10 +22,10 @@ export function Servico ({ servico, setServicoSelecionado, setIsOpen, isAdmin }:
         mutationFn: deleteServicos,
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ['Servico'],
+                queryKey: ['servicos'],
             })
         },
-        onError: (err) => alert(err.message)
+        onError: () => toast.error("Não foi possível excluir o serviço.")
     })
 
     function handleUpdate() {
@@ -45,7 +46,7 @@ export function Servico ({ servico, setServicoSelecionado, setIsOpen, isAdmin }:
             <ClienteInfo>{servico.servico}</ClienteInfo>
             <ClienteInfo>{valorFormatado}</ClienteInfo>
             {isAdmin && (
-                <IconBtn cliente={servico.id} handleDelete={() => handleDelete(servico.id, mutate, "serviço")} handleUpdate={handleUpdate} />
+                <IconBtn cliente={servico} handleDelete={() => handleDelete(servico.id, mutate, "serviço")} handleUpdate={handleUpdate} />
             )}
         </ServicoRow>
     )

@@ -1,17 +1,19 @@
 import { getEmpresaIdAtual } from "../../components/empresas/empresasApi";
 import { supabase } from "../../services/supabaseApi";
+import type { PagamentoQuitado } from "../../models/financeiro";
 
-export async function getPagamentoQuitado() {
+export async function getPagamentoQuitado(): Promise<PagamentoQuitado[]> {
     const empresaId = await getEmpresaIdAtual();
 
-    let { data: PagamentoQuitado, error } = await supabase
+    const { data: PagamentoQuitado, error } = await supabase
     .from('PagamentoQuitado')
     .select('*')
     .eq('empresa_id', empresaId)
+    .order('dataPagamento', { ascending: false })
 
     if (error) throw new Error("Não foi possível carregar as contas a pagar.");
 
-    return PagamentoQuitado;
+    return PagamentoQuitado ?? [];
 }
 
 export async function deletePagamentoQuitado(id: number) {

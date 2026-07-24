@@ -1,7 +1,8 @@
 import styled, { css } from "styled-components";
 
 export const PageContainer = styled.main`
-  width: 100%;
+  width: min(100%, ${({ theme }) => theme.layout.containerMax});
+  margin: 0 auto;
   padding: clamp(1rem, 3vw, ${({ theme }) => theme.spacing[6]});
   background: ${({ theme }) => theme.colors.background};
   min-height: calc(100vh - ${({ theme }) => theme.layout.headerHeight});
@@ -125,7 +126,7 @@ export const TableWrapper = styled.section`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radius.lg};
-  box-shadow: ${({ theme }) => theme.shadow.sm};
+  box-shadow: ${({ theme }) => theme.shadow.md};
   overflow: hidden;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -151,7 +152,7 @@ export const Table = styled.table`
 `;
 
 export const Thead = styled.thead`
-  background: ${({ theme }) => theme.colors.background};
+  background: color-mix(in srgb, ${({ theme }) => theme.colors.background} 60%, ${({ theme }) => theme.colors.surface});
 
   @media (max-width: 760px) {
     display: none;
@@ -183,7 +184,7 @@ export const Tbody = styled.tbody`
       background: ${({ theme }) => theme.colors.surface};
       border: 1px solid ${({ theme }) => theme.colors.border};
       border-radius: ${({ theme }) => theme.radius.md};
-      box-shadow: ${({ theme }) => theme.shadow.sm};
+      box-shadow: ${({ theme }) => theme.shadow.md};
 
       &:hover {
         background: ${({ theme }) => theme.colors.surface};

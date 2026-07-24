@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   Form,
   FieldGroup,
@@ -7,14 +7,15 @@ import {
   ErrorText,
   CancelButton,
   SubmitButton,
-} from "./ContaReceberModalStyled";
+} from "../ui/FinanceFormStyled";
 import { BaseFinanceModal } from "./BaseFinanceModal";
 import { usePagamentosRecebidosForm } from "./useHooksFinanceForms";
+import type { PagamentoRecebido } from "../../models/financeiro";
 
 export type CreateContaReceberModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  financaSelecionada?: any;
+  financaSelecionada?: PagamentoRecebido | null;
 };
 
 export function CreatePagamentoRecebidoModal({
@@ -23,26 +24,16 @@ export function CreatePagamentoRecebidoModal({
   financaSelecionada,
 }: CreateContaReceberModalProps) {
   const hasId = Boolean(financaSelecionada?.id);
-  const modalRef = useRef<HTMLDivElement>(null);
 
-  const [descricao, setDescricao] = useState("");
-  const [metodoPag, setMetodoPag] = useState("");
-  const [taxaMaquina, setTaxaMaquina] = useState("");
-  const [dataRecebimento, setDataRecebimento] = useState("");
-  const [valor, setValor] = useState("");
+  const [descricao, setDescricao] = useState(financaSelecionada?.descricao ?? "");
+  const [metodoPag, setMetodoPag] = useState(financaSelecionada?.metodoPag ?? "");
+  const [taxaMaquina, setTaxaMaquina] = useState(financaSelecionada ? String(financaSelecionada.taxaMaquina) : "");
+  const [dataRecebimento, setDataRecebimento] = useState(financaSelecionada?.dataRecebimento ?? "");
+  const [valor, setValor] = useState(financaSelecionada ? String(financaSelecionada.valor) : "");
 
   const { mutate, isPending, error } = usePagamentosRecebidosForm();
 
-  function resetForm() {
-    setDescricao("");
-    setMetodoPag("");
-    setTaxaMaquina("");
-    setDataRecebimento("");
-    setValor("");
-  }
-
   function handleClose() {
-    resetForm();
     onClose();
   }
 
@@ -72,54 +63,10 @@ export function CreatePagamentoRecebidoModal({
     );
   }
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        handleClose();
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (financaSelecionada && isOpen) {
-      setDescricao(financaSelecionada.descricao || "");
-      setValor(
-        financaSelecionada.valor !== undefined
-          ? String(financaSelecionada.valor)
-          : ""
-      );
-        setDataRecebimento(financaSelecionada.dataRecebimento || "");
-        setMetodoPag(financaSelecionada.metodoPag || "");
-        setTaxaMaquina(
-          financaSelecionada.taxaMaquina !== undefined
-            ? String(financaSelecionada.taxaMaquina)
-            : ""
-        );
-    } else if (isOpen) {
-      resetForm();
-    }
-  }, [financaSelecionada, isOpen]);
-
-  function handleOverlayClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      handleClose();
-    }
-  }
-
   if (!isOpen) return null;
 
   return (
-    <div onMouseDown={handleOverlayClick}>
-      <div ref={modalRef}>
-        <BaseFinanceModal
+    <BaseFinanceModal
           isOpen={isOpen}
           title={hasId ? "Editar pagamento recebido" : "Novo pagamento recebido"}
           onClose={handleClose}
@@ -130,7 +77,7 @@ export function CreatePagamentoRecebidoModal({
               </CancelButton>
 
               <SubmitButton
-                form="create-conta-receber-form"
+                form="create-pagamento-recebido-form"
                 type="submit"
                 disabled={isPending}
               >
@@ -143,7 +90,7 @@ export function CreatePagamentoRecebidoModal({
             </>
           }
         >
-          <Form id="create-conta-receber-form" onSubmit={handleSubmit}>
+          <Form id="create-pagamento-recebido-form" onSubmit={handleSubmit}>
             <FieldGroup>
               <Label htmlFor="descricao">Descrição</Label>
               <Input
@@ -202,8 +149,6 @@ export function CreatePagamentoRecebidoModal({
 
             {error && <ErrorText>{error.message}</ErrorText>}
           </Form>
-        </BaseFinanceModal>
-      </div>
-    </div>
+    </BaseFinanceModal>
   );
 }

@@ -1,14 +1,21 @@
 import { useForm } from "react-hook-form";
-import { ButtonContainer, ErrorMessage, Form, FormRow, Input, Label, SubmitButton } from "./CreateClienteStyled";
+import { ButtonContainer, ErrorMessage, Form, FormRow, Input, Label, SubmitButton } from "../ui/EntityFormStyled";
 import { LoadingContainer } from "../spinner/LoadingContainer";
 import { useEffect } from "react";
 import { makeUpdateEstoquePayload } from "../../utils/normalizeCliente";
 import { useEditEstoque, useInsertEstoque } from "../../pages/estoque/useEstoque";
+import type { Dispatch, SetStateAction } from "react";
+import type { EstoqueFormData, EstoqueItem } from "../../models/estoque";
+
+type CreateEstoqueProps = {
+  clienteParaEditar: EstoqueItem | null;
+  setIsCreateOpen: Dispatch<SetStateAction<boolean>>;
+};
 
 export function CreateEstoque({
   clienteParaEditar,
   setIsCreateOpen,
-}: any) {
+}: CreateEstoqueProps) {
   const hasId = !!clienteParaEditar?.id;
 
   const {
@@ -16,7 +23,7 @@ export function CreateEstoque({
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm({
+  } = useForm<EstoqueFormData>({
     defaultValues: {
       nome: "",
       custo: "",
@@ -43,14 +50,19 @@ useEffect(() => {
   }
 }, [clienteParaEditar, reset]);
 
-  const { mutate, isPending } = useInsertEstoque(setIsCreateOpen, reset)
-  const { mutateEstoque, isPendingEstoque } = useEditEstoque(setIsCreateOpen, reset)
+  const { mutate, isPending } = useInsertEstoque(reset, setIsCreateOpen)
+  const { mutateEstoque, isPendingEstoque } = useEditEstoque(reset, setIsCreateOpen)
 
-  function onSubmit(data: any) {
-    const payload = data;
+  function onSubmit(data: EstoqueFormData) {
+    const payload = {
+      ...data,
+      custo: Number(data.custo),
+      valor: Number(data.valor),
+      qtdEstoque: Number(data.qtdEstoque),
+    };
 
     if (hasId && clienteParaEditar) {
-      const updatePayload = makeUpdateEstoquePayload(clienteParaEditar.id ,data)
+      const updatePayload = makeUpdateEstoquePayload(clienteParaEditar.id, data)
       mutateEstoque(updatePayload);
       return;
     }
@@ -72,25 +84,25 @@ useEffect(() => {
 
       <FormRow>
         <Label htmlFor="custo">Custo:</Label>
-        <Input type="text" id="custo" $error={!!errors.custo} {...register("custo")} />
+        <Input type="number" min="0" step="0.01" id="custo" $error={!!errors.custo} {...register("custo", { required: true, min: 0 })} />
         {errors.custo && <ErrorMessage>⚠ {errors.custo.message}</ErrorMessage>}
       </FormRow>
 
       <FormRow>
         <Label htmlFor="valor">Valor:</Label>
-        <Input type="text" id="valor" $error={!!errors.valor} {...register("valor")} />
+        <Input type="number" min="0" step="0.01" id="valor" $error={!!errors.valor} {...register("valor", { required: true, min: 0 })} />
         {errors.valor && <ErrorMessage>⚠ {errors.valor.message}</ErrorMessage>}
       </FormRow>
 
       <FormRow>
         <Label htmlFor="qtdEstoque">Quantidade em Estoque:</Label>
-        <Input type="text" id="qtdEstoque" $error={!!errors.qtdEstoque} {...register("qtdEstoque")} />
+        <Input type="number" min="0" step="1" id="qtdEstoque" $error={!!errors.qtdEstoque} {...register("qtdEstoque", { required: true, min: 0 })} />
         {errors.qtdEstoque && <ErrorMessage>⚠ {errors.qtdEstoque.message}</ErrorMessage>}
       </FormRow>
 
       <ButtonContainer>
         <SubmitButton type="submit">
-          {hasId ? "Salvar edição" : "Salvar Cliente"}
+          {hasId ? "Salvar edição" : "Salvar produto"}
         </SubmitButton>
       </ButtonContainer>
     </Form>

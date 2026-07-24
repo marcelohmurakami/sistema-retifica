@@ -8,15 +8,15 @@ export const ClienteRow = styled.div`
   align-items: center;
   background: ${({ theme }) => theme.colors.surface};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  transition: 0.2s ease;
+  transition: background 0.18s ease, transform 0.18s ease;
   gap: 1rem;
 
   &:nth-child(even) {
-    background: ${({ theme }) => theme.colors.background};
+    background: color-mix(in srgb, ${({ theme }) => theme.colors.background} 55%, ${({ theme }) => theme.colors.surface});
   }
 
   &:hover {
-    background: ${({ theme }) => theme.colors.border};
+    background: ${({ theme }) => theme.colors.accentSoft};
   }
 
   @media (max-width: 760px) {
@@ -27,16 +27,17 @@ export const ClienteRow = styled.div`
     padding: 1rem;
     margin-bottom: 0.85rem;
     border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: 12px;
+    border-radius: 15px;
     background: ${({ theme }) => theme.colors.surface};
+    box-shadow: ${({ theme }) => theme.shadow.sm};
   }
 `;
 
 export const ClienteInfo = styled.p`
   min-width: 0;
   margin: 0;
-  font-size: 1.3rem;
-  font-weight: 700;
+  font-size: 0.8rem;
+  font-weight: 590;
   color: ${({ theme }) => theme.colors.primaryDark};
   white-space: nowrap;
   overflow: hidden;
@@ -46,13 +47,13 @@ export const ClienteInfo = styled.p`
     white-space: normal;
     overflow: visible;
     text-overflow: initial;
-    font-size: 1.35rem;
+    font-size: 0.88rem;
 
     &::before {
       display: block;
       margin-bottom: 0.2rem;
-      font-size: 1.05rem;
-      font-weight: 800;
+      font-size: 0.64rem;
+      font-weight: 740;
       color: ${({ theme }) => theme.colors.textSecondary};
       text-transform: uppercase;
       letter-spacing: 0.04em;

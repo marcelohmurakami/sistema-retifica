@@ -1,15 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deletePagamentoQuitado, getPagamentoQuitado } from "./pagamentoQuitadoApi";
 import { useAuth } from "../../contexts/AuthContext";
+import type { PagamentoQuitado } from "../../models/financeiro";
 
 export function useGetPagamentoQuitado() {
   const { user } = useAuth();
 
   const {
-    data,
+    data = [],
     isLoading: isLoadingPagamentoQuitado,
     error,
-  } = useQuery<any>({
+  } = useQuery<PagamentoQuitado[]>({
     queryKey: ["PagamentoQuitado", "lista", user?.id],
     enabled: !!user?.id,
     queryFn: getPagamentoQuitado,
@@ -27,6 +28,7 @@ export function useDeletePagamentoQuitado() {
       queryClient.invalidateQueries({
         queryKey: ["PagamentoQuitado"],
       });
+      queryClient.invalidateQueries({ queryKey: ["relatoriosPagamentos"] });
     },
   });
 

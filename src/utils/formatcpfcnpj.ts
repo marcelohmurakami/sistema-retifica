@@ -1,6 +1,5 @@
 export function formatCpfCnpj(value: string) {
   if (!value) return "";
-  console.log(value)
   const digits = value.replace(/\D/g, "");
 
   if (digits.length <= 11) {

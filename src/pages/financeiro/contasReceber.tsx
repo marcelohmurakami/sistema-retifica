@@ -1,9 +1,10 @@
 import { getEmpresaIdAtual } from "../../components/empresas/empresasApi";
 import { supabase } from "../../services/supabaseApi";
+import type { ContaReceber } from "../../models/financeiro";
 
-export async function getContasAReceber() {
+export async function getContasAReceber(): Promise<ContaReceber[]> {
     const empresaId = await getEmpresaIdAtual();
-    let { data, error } = await supabase
+    const { data, error } = await supabase
     .from('ContasReceber')
     .select(`
         *,
@@ -13,19 +14,20 @@ export async function getContasAReceber() {
         )
     `)
     .eq('empresa_id', empresaId)
+    .order('dataPagamento', { ascending: true })
 
   if (error) throw new Error("Não foi possível carregar as contas a receber.");
 
-  return data;
+  return data ?? [];
 }
 
 export async function deleteContasReceber(id: number) {
   const empresaId = await getEmpresaIdAtual();
 
   const { data: pagamentos } = await supabase
-    .from("PagamentoQuitado")
+    .from("PagamentoRecebido")
     .select("id")
-    .eq("idPagamentoQuit", id)
+    .eq("idContaReceber", id)
     .eq("empresa_id", empresaId);
 
   if (pagamentos && pagamentos.length > 0) {

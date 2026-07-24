@@ -7,15 +7,16 @@ import { useDeletePagamentoRecebido, useGetPagamentoRecebido } from "../financei
 import { CreatePagamentoRecebidoModal } from "../../components/createFinanceForms/CreatePagamentoRecebidoModal";
 import { ReciboPagamento } from "./ReciboPagamento";
 import { ReceiptText} from 'lucide-react'
+import type { PagamentoRecebido } from "../../models/financeiro";
 
 export function PagamentosRecebidos() {
   const { data } = useGetPagamentoRecebido();
 
   const [search, setSearch] = useState("");
-  const [financaSelecionada, setFinancaSelecionada] = useState<any>(null);
+  const [financaSelecionada, setFinancaSelecionada] = useState<PagamentoRecebido | null>(null);
   const [filter, setFilter] = useState("");
   const [openModal, setOpenModal] = useState(false);
-  const [reciboSelecionado, setReciboSelecionado] = useState<any>(null);
+  const [reciboSelecionado, setReciboSelecionado] = useState<PagamentoRecebido | null>(null);
   const { mutate: deletePagamentoRecebido } = useDeletePagamentoRecebido();
 
   useEffect(() => {
@@ -29,15 +30,15 @@ export function PagamentosRecebidos() {
   }, [reciboSelecionado]);
 
   const filteredData = useMemo(() => {
-    return data?.filter((item: any) => {
-      const cliente = item.ContasReceber?.OrdensDeServiço?.Clientes?.cliente?.toLowerCase() || "";
+    return data.filter((item) => {
+      const cliente = item.ContasReceber?.OrdensServico?.Clientes?.cliente?.toLowerCase() || "";
       const searchTerm = search.toLowerCase();
 
       const matchesSearch =
         !searchTerm ||
         String(item.id).includes(searchTerm) ||
         String(cliente).includes(searchTerm) ||
-        item.metodoPag.toLowerCase().includes(searchTerm);
+        (item.metodoPag?.toLowerCase() ?? "").includes(searchTerm);
 
       const matchesFilter = !filter || item.metodoPag === filter;
 
@@ -50,12 +51,12 @@ export function PagamentosRecebidos() {
     setOpenModal(true);
   }
 
-  function handleEdit(item: any) {
+  function handleEdit(item: PagamentoRecebido) {
     setFinancaSelecionada(item);
     setOpenModal(true);
   }
 
-    function handleDelete(item: any) {
+    function handleDelete(item: PagamentoRecebido) {
       const confirmDelete = window.confirm(
         `Tem certeza que deseja excluir o registro?`
       );
@@ -84,27 +85,27 @@ export function PagamentosRecebidos() {
       ]}
       columns={[
         { key: "id", title: "ID" },
-        { key: "descricao", title: "Descrição do pagamento", render: (item: any) => String(item.descricao) },
+        { key: "descricao", title: "Descrição do pagamento", render: (item) => String(item.descricao) },
         {
           key: "valorRecebido",
           title: "Valor recebido",
-          render: (item: any) => <MoneyText>{formatCurrency(item.valor)}</MoneyText>,
+          render: (item) => <MoneyText>{formatCurrency(item.valor)}</MoneyText>,
         },
         { key: "metodoPag", title: "Método" },
         {
           key: "taxaMaquina",
           title: "Taxa",
-          render: (item: any) => <MoneyText>{formatCurrency(item.taxaMaquina)}</MoneyText>,
+          render: (item) => <MoneyText>{formatCurrency(item.taxaMaquina)}</MoneyText>,
         },
         {
           key: "dataRecebimento",
           title: "Recebido em",
-          render: (item: any) => formatDate(item.dataRecebimento),
+          render: (item) => formatDate(item.dataRecebimento),
         },
         {
           key: "recibo",
           title: "Recibo",
-          render: (item: any) => (
+          render: (item) => (
             <ReceiptIconButton
               type="button"
               title="Emitir recibo"
@@ -122,11 +123,14 @@ export function PagamentosRecebidos() {
       onDelete={handleDelete}
       onCreate={handleCreate}
     />
-    <CreatePagamentoRecebidoModal
-      isOpen={openModal}
-      onClose={() => setOpenModal(false)}
-      financaSelecionada={financaSelecionada}
-    />
+    {openModal && (
+      <CreatePagamentoRecebidoModal
+        key={financaSelecionada?.id ?? "new"}
+        isOpen
+        onClose={() => setOpenModal(false)}
+        financaSelecionada={financaSelecionada}
+      />
+    )}
     {reciboSelecionado && (
       <ReciboPagamento
         pagamento={reciboSelecionado}

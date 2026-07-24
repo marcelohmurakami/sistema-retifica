@@ -6,6 +6,7 @@ export const ClientesStyled = styled.div`
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
+    padding: 0.2rem 0;
 
     @media (max-width: 640px) {
       align-items: stretch;
@@ -13,11 +14,30 @@ export const ClientesStyled = styled.div`
 `
 
 export const ClientesInfos = styled.h2`
-    font-size: 1.8rem;
+    color: ${({ theme }) => theme.colors.primaryDark};
+    font-size: clamp(1.35rem, 3vw, 1.75rem);
+    font-weight: 740;
+    letter-spacing: -0.035em;
+
+    &:last-child {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: ${({ theme }) => theme.colors.textSecondary};
+      font-size: 0.76rem;
+      font-weight: 620;
+      letter-spacing: 0;
+    }
 
     @media (max-width: 640px) {
       width: 100%;
-      font-size: 1.55rem;
+      font-size: 1.3rem;
+
+      &:last-child {
+        align-items: stretch;
+        flex-direction: column;
+        font-size: 0.74rem;
+      }
     }
 `
 
@@ -25,11 +45,17 @@ export const ClientesTable = styled.div`
   width: 100%;
   margin-top: 16px;
   overflow-x: auto;
-  border-radius: 12px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 16px;
+  background: ${({ theme }) => theme.colors.surface};
+  box-shadow: ${({ theme }) => theme.shadow.sm};
 
   @media (max-width: 760px) {
     overflow: visible;
+    border: 0;
     border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 `;
 
@@ -38,10 +64,10 @@ export const ClientesHeader = styled.div`
   grid-template-columns: 50px minmax(220px, 1.35fr) minmax(100px, 0.7fr) minmax(100px, 0.7fr) minmax(110px, 0.7fr) minmax(140px, 0.9fr) 80px;
   min-width: 900px;
   padding: 14px 16px;
-  background: linear-gradient(90deg, #1e293b, #0f172a);
+  background: linear-gradient(95deg, #242b36, #141922);
   color: white;
   font-weight: 700;
-  border-radius: 12px 12px 0 0;
+  border-radius: 15px 15px 0 0;
   gap: 1rem;
 
   @media (max-width: 760px) {
@@ -50,8 +76,10 @@ export const ClientesHeader = styled.div`
 `;
 
 export const HeaderItem = styled.div`
-  font-size: 13px;
-  letter-spacing: 0.4px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.7rem;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
 `;
 
 export const ClienteInfo = styled.div`
@@ -67,7 +95,8 @@ export const SelectStyled = styled.select`
   padding: 10px 14px;
   border-radius: 10px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  background-color: ${({ theme }) => theme.colors.surface};
+  min-height: 42px;
+  background-color: ${({ theme }) => theme.colors.surfaceElevated};
   font-size: 14px;
   font-weight: 500;
   color: ${({ theme }) => theme.colors.textPrimary};
@@ -93,12 +122,12 @@ export const SelectStyled = styled.select`
   background-size: 16px;
 
   &:hover {
-    border-color: #9ca3af;
+    border-color: color-mix(in srgb, ${({ theme }) => theme.colors.textSecondary} 45%, ${({ theme }) => theme.colors.border});
   }
 
   &:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    border-color: ${({ theme }) => theme.colors.accent};
+    box-shadow: 0 0 0 4px color-mix(in srgb, ${({ theme }) => theme.colors.accent} 12%, transparent);
   }
 
   @media (max-width: 640px) {

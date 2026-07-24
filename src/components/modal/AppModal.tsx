@@ -1,7 +1,7 @@
 import { AnimatePresence } from "framer-motion";
-import { useEffect } from "react";
 import styled from "styled-components";
 import { motion } from "framer-motion";
+import { useModalAccessibility } from "./useModalAccessibility";
 
 const Overlay = styled(motion.div)`
   position: fixed;
@@ -13,8 +13,8 @@ const Overlay = styled(motion.div)`
 
   padding: clamp(0.75rem, 3vw, 1.5rem);
 
-  background: color-mix(in srgb, ${({ theme }) => theme.colors.background} 74%, transparent);
-  backdrop-filter: blur(8px);
+  background: rgba(7, 10, 14, 0.62);
+  backdrop-filter: blur(7px);
 
   overflow-y: auto;
 
@@ -30,11 +30,11 @@ const ModalCard = styled(motion.div)`
   overscroll-behavior: contain;
 
   border-radius: 20px;
-  background: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
 
   border: 1px solid ${({ theme }) => theme.colors.border};
 
-  box-shadow: ${({ theme }) => theme.shadow.md};
+  box-shadow: ${({ theme }) => theme.shadow.lg};
 
   position: relative;
 
@@ -74,7 +74,7 @@ const CloseButton = styled.button`
   border-radius: 12px;
 
   border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   color: ${({ theme }) => theme.colors.textPrimary};
 
   cursor: pointer;
@@ -83,34 +83,25 @@ const CloseButton = styled.button`
 
   box-shadow: ${({ theme }) => theme.shadow.sm};
 
+  &:hover {
+    color: ${({ theme }) => theme.colors.error};
+    background: color-mix(in srgb, ${({ theme }) => theme.colors.error} 8%, transparent);
+  }
+
   @media (max-width: 420px) {
     width: 38px;
     height: 38px;
   }
 `;
 
-type Props = {
+export type AppModalProps = {
   open: boolean,
   onClose: () => void,
   children: React.ReactNode,
 };
 
-export function CreateClienteModal({ open, onClose, children }: Props) {
-
-  useEffect(() => {
-    if (!open) return;
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
-
-  }, [open, onClose]);
+export function AppModal({ open, onClose, children }: AppModalProps) {
+  const dialogRef = useModalAccessibility(open, onClose);
 
   return (
     <AnimatePresence>
@@ -118,21 +109,31 @@ export function CreateClienteModal({ open, onClose, children }: Props) {
       {open && (
 
         <Overlay
-          onClick={onClose}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) onClose();
+          }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
 
           <ModalCard
-            onClick={(e) => e.stopPropagation()}
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Formulário"
+            tabIndex={-1}
             initial={{ opacity: 0, y: 20, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.97 }}
             transition={{ duration: 0.25 }}
           >
 
-            <CloseButton onClick={onClose}>
+            <CloseButton
+              type="button"
+              onClick={onClose}
+              aria-label="Fechar formulário"
+            >
               ✕
             </CloseButton>
 

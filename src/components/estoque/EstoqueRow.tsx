@@ -1,35 +1,42 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { IconBtn } from "../buttons/IconBtn"
 import { ClienteInfo, ClienteRow } from "./EstoqueRowStyled"
-import type { ClienteType } from "../../models/cliente"
 import { handleDelete } from "../../utils/handleDelete"
 import { LoadingContainer } from "../spinner/LoadingContainer"
 import toast from "react-hot-toast";
-import type { OsType } from "../../models/os"
 import { deleteEstoque } from "../../pages/estoque/estoqueApi"
+import type { EstoqueItem } from "../../models/estoque";
+import type { Dispatch, SetStateAction } from "react";
 
-export function EstoqueRow ({cliente, setClienteSelecionado ,setIsCreateOpen, isAdmin}: any) {
+type EstoqueRowProps = {
+    cliente: EstoqueItem;
+    setClienteSelecionado: Dispatch<SetStateAction<EstoqueItem | null>>;
+    setIsCreateOpen: Dispatch<SetStateAction<boolean>>;
+    isAdmin: boolean;
+};
+
+export function EstoqueRow ({cliente, setClienteSelecionado ,setIsCreateOpen, isAdmin}: EstoqueRowProps) {
     const queryClient = useQueryClient();
 
     const { isPending, mutate } = useMutation({
         mutationFn: deleteEstoque,
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ['estoque'],
+                queryKey: ['Estoque'],
             })
         },
-        onError: () => toast.error("Não foi possível deletar o cliente")
+        onError: () => toast.error("Não foi possível deletar o produto")
     })
 
-    function handleUpdate(cliente: ClienteType | OsType) {
-        setClienteSelecionado(cliente);
+    function handleUpdate(item: EstoqueItem) {
+        setClienteSelecionado(item);
         setIsCreateOpen(true);
     }
 
     let situacao;
-    if (cliente.qtdEstoque === 1) {
+    if (cliente.qtdEstoque <= 1 && cliente.qtdEstoque > 0) {
         situacao = "Estoque crítico";
-    } else if (cliente.qtdEstoque === 0) {
+    } else if (cliente.qtdEstoque <= 0) {
         situacao = "Esgotado";
     } else {
         situacao = "Em estoque";
@@ -56,7 +63,7 @@ export function EstoqueRow ({cliente, setClienteSelecionado ,setIsCreateOpen, is
             <ClienteInfo>{cliente.qtdEstoque}</ClienteInfo>
             <ClienteInfo>{situacao}</ClienteInfo>
             {isAdmin && (
-                <IconBtn cliente={cliente} handleDelete={() => handleDelete(cliente.id, mutate, "cliente")} handleUpdate={handleUpdate} />
+                <IconBtn cliente={cliente} handleDelete={() => handleDelete(cliente.id, mutate, "produto")} handleUpdate={handleUpdate} />
             )}
         </ClienteRow>
     )

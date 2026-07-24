@@ -1,7 +1,10 @@
 import { getEmpresaIdAtual } from "../../components/empresas/empresasApi";
-import type { OsType } from "../../models/os";
 import { supabase } from "../../services/supabaseApi";
 import { PAGE_SIZE } from "../../utils/pageSize";
+import type { EditOrcamentoInput, OrcamentoFormData, OrcamentoType } from "../../models/orcamento";
+import { getPaginationRange, parseSort } from "../../utils/queryPagination";
+
+const BUDGET_SORT_FIELDS = new Set(["id", "motor", "situacao", "created_at"]);
 
 export async function GetOrcamentos(
   sortByString: string,
@@ -9,13 +12,11 @@ export async function GetOrcamentos(
   searchTerm = ""
 ) {
   const empresaId = await getEmpresaIdAtual();
-  const sortBy = sortByString.split("-")[0];
-
-  const direction =
-    sortByString.split("-")[1] === "asc";
-
-  const from = Math.max((page - 1) * PAGE_SIZE, 0);
-  const to = from + PAGE_SIZE - 1;
+  const { field: sortBy, ascending } = parseSort(
+    sortByString,
+    BUDGET_SORT_FIELDS,
+  );
+  const { from, to } = getPaginationRange(page, PAGE_SIZE);
 
   let query = supabase
     .from("Orcamentos")
@@ -26,7 +27,7 @@ export async function GetOrcamentos(
     `,
       { count: "exact" }
     )
-    .order(sortBy, { ascending: direction })
+    .order(sortBy, { ascending })
     .eq('empresa_id', empresaId);
 
   // 🔍 aplica busca se tiver texto
@@ -50,7 +51,7 @@ export async function GetOrcamentos(
   };
 }
 
-export async function getOrcamentoById(id: number) {
+export async function getOrcamentoById(id: number): Promise<OrcamentoType | null> {
   const empresaId = await getEmpresaIdAtual();
 
   const { data, error } = await supabase
@@ -84,7 +85,7 @@ export async function deleteOrcamento(id: number) {
   return data;
 }
 
-export async function InsertOrcamento(orcamento: any) {
+export async function InsertOrcamento(orcamento: OrcamentoFormData) {
   const empresaId = await getEmpresaIdAtual();
 
   const { data, error } = await supabase
@@ -97,8 +98,7 @@ export async function InsertOrcamento(orcamento: any) {
     .single();
 
   if (error) {
-    console.error("Erro real:", error);
-    throw error;
+    throw new Error(error.message);
   }
 
   if (!data) {
@@ -108,7 +108,7 @@ export async function InsertOrcamento(orcamento: any) {
   return data;
 }
 
-export async function EditOrcamento({ id, orcamento }: any) {
+export async function EditOrcamento({ id, orcamento }: EditOrcamentoInput) {
   const empresaId = await getEmpresaIdAtual();
 
   const { data , error: osError } = await supabase
@@ -126,25 +126,6 @@ export async function EditOrcamento({ id, orcamento }: any) {
   return data
 }
 
-export async function getOSById(id: number): Promise<OsType> {
-  const empresaId = await getEmpresaIdAtual();
-  const { data, error } = await supabase
-    .from("OrdensDeServiço")
-    .select(`
-      *,
-      Clientes(*)
-    `)
-    .eq("id", id)
-    .eq('empresa_id', empresaId)
-    .single()
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return data
-}
-
 export async function updateSituacaoOrcamento({
   id,
   situacao,
@@ -152,10 +133,12 @@ export async function updateSituacaoOrcamento({
   id: number;
   situacao: string;
 }) {
+  const empresaId = await getEmpresaIdAtual();
   const { data, error } = await supabase
     .from("Orcamentos")
     .update({ situacao })
     .eq("id", id)
+    .eq("empresa_id", empresaId)
     .select()
     .single();
 

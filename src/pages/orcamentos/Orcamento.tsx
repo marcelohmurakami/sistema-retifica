@@ -4,15 +4,19 @@ import { FiltroSituacaoLabel, FiltrosSituacao, FooterInfo, OSHeader, OSTable, OS
 import { ClientesStyled, ClientesInfos, HeaderItem, SelectStyled } from "../clientes/ClientesStyled";
 import { useState } from "react";
 import { AddBtn } from "../../components/buttons/AddBtn";
-import { CreateClienteModal } from "../../components/createForms/CreateClienteModal";
+import { AppModal } from "../../components/modal/AppModal";
 import { LoadingContainer } from "../../components/spinner/LoadingContainer";
 import { PAGE_SIZE } from "../../utils/pageSize";
 import { GetOrcamentos } from "./Orcamento";
 import { CreateOrcamento } from "../../components/createForms/CreateOrcamento";
 import { OrcamentoDetalhes } from "./OrcamentoDetalhes";
 import { useEmpresaAtual } from "../../components/empresas/useEmpresas";
+import type { OrcamentoType, SituacaoOrcamento } from "../../models/orcamento";
+import { useAuth } from "../../contexts/AuthContext";
+import { queryKeys } from "../../services/queryKeys";
 
 export function Orcamento () {
+    const { user: authUser } = useAuth();
     const { data: user } = useEmpresaAtual();
     const isAdmin = user?.role === "admin" || user?.role === "financeiro_master" ? true : false;
 
@@ -22,24 +26,29 @@ export function Orcamento () {
     const [ searchTerms, setSearchTerms ] = useState('')
 
     const { data, isLoading } = useQuery({
-        queryKey: ['Orcamentos', sortBy, page, searchInput],
+        queryKey: queryKeys.orcamentos.page(authUser?.id, sortBy, page, searchInput),
         queryFn: () => GetOrcamentos(sortBy, page, searchInput),
+        enabled: !!authUser?.id,
     });
 
-    const orcamentosAnalise = data?.data.filter((orcamento: any) => orcamento.situacao === "analise");
-    const orcamentosAguardando = data?.data.filter((orcamento: any) => orcamento.situacao === "aguardando");
-    const orcamentosProducao = data?.data.filter((orcamento: any) => orcamento.situacao === "producao");
-    const orcamentosPronto = data?.data.filter((orcamento: any) => orcamento.situacao === "pronto");
-    const orcamentosCancelado = data?.data.filter((orcamento: any) => orcamento.situacao === "cancelado");
-    const orcamentosAguardandoPecas = data?.data.filter((orcamento: any) => orcamento.situacao === "aguardandoPecas");
+    const orcamentosAnalise = data?.data.filter((orcamento) => orcamento.situacao === "analise");
+    const orcamentosAguardando = data?.data.filter((orcamento) => orcamento.situacao === "aguardando");
+    const orcamentosProducao = data?.data.filter((orcamento) => orcamento.situacao === "producao");
+    const orcamentosPronto = data?.data.filter((orcamento) => orcamento.situacao === "pronto");
+    const orcamentosCancelado = data?.data.filter((orcamento) => orcamento.situacao === "cancelado");
+    const orcamentosAguardandoPecas = data?.data.filter((orcamento) => orcamento.situacao === "aguardandoPecas");
 
     const count = data?.count ?? 0;
     const [ isCreateOpen, setIsCreateOpen ] = useState(false)
-    const [ orcamentoSelecionado, setOrcamentoSelecionado ] = useState<any>(null);
+    const [ orcamentoSelecionado, setOrcamentoSelecionado ] = useState<OrcamentoType | null>(null);
     const numberOfPages = Math?.ceil(count / PAGE_SIZE);
-    const paginas = Array.from({ length: numberOfPages }, (_, i) => i + 1);
+    const inicioPaginas = Math.max(1, Math.min(page - 4, numberOfPages - 9));
+    const paginas = Array.from(
+      { length: Math.min(10, numberOfPages) },
+      (_, i) => inicioPaginas + i,
+    );
 
-    const situacoesFiltro = [
+    const situacoesFiltro: Array<{ value: SituacaoOrcamento; label: string }> = [
         { value: "analise", label: "Análise" },
         { value: "aguardando", label: "Aguardando" },
         { value: "aguardandoPecas", label: "Aguardando peças" },
@@ -50,7 +59,7 @@ export function Orcamento () {
 
     const [situacoesSelecionadas, setSituacoesSelecionadas] = useState<string[]>([]);
 
-    function toggleSituacao(situacao: string) {
+    function toggleSituacao(situacao: SituacaoOrcamento) {
         setSituacoesSelecionadas((selecionadas) => {
             if (selecionadas.includes(situacao)) {
             return selecionadas.filter((item) => item !== situacao);
@@ -140,13 +149,9 @@ export function Orcamento () {
                 <ClientesInfos>Todos as ordens de serviço</ClientesInfos>
                 <ClientesInfos>Ordernar por: <SelectStyled value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                     <option value="id">ID</option>    
-                    <option value="idCliente-asc">Nome do cliente (A-Z)</option>    
-                    <option value="idCliente-desc">Nome do cliente (Z-A)</option>    
-                    <option value="valorServico-asc">Valor do serviço (Menor - maior)</option>    
-                    <option value="valorServico-desc">Valor do serviço (Maior - menor)</option>    
-                    <option value="dataServico-asc">Data do serviço (Menor - maior)</option>    
-                    <option value="dataServico-desc">Data do serviço (Maior - menor)</option>    
-                    <option value="motor">Motor</option>    
+                    <option value="motor-asc">Motor (A-Z)</option>
+                    <option value="motor-desc">Motor (Z-A)</option>
+                    <option value="situacao-asc">Situação (A-Z)</option>
                 </SelectStyled> </ClientesInfos>
             </ClientesStyled>
 
@@ -162,7 +167,7 @@ export function Orcamento () {
 
                 {!isLoading && orcamentosFiltrados?.map((orcamento) => {
                     return (
-                        <OrcamentoDetalhes orcamento={orcamento} setOrcamentoSelecionado={setOrcamentoSelecionado} setIsCreateOpen={setIsCreateOpen} isAdmin={isAdmin} />
+                        <OrcamentoDetalhes key={orcamento.id} orcamento={orcamento} setOrcamentoSelecionado={setOrcamentoSelecionado} setIsCreateOpen={setIsCreateOpen} isAdmin={isAdmin} />
                     )
                 })}
 
@@ -180,7 +185,7 @@ export function Orcamento () {
                         ‹
                     </PaginationButton>
                     {paginas.map((pagina) => (
-                        <PaginationButton value={pagina} onClick={() => setPage(pagina)} $active={pagina === page}>
+                        <PaginationButton key={pagina} value={pagina} onClick={() => setPage(pagina)} $active={pagina === page}>
                             {pagina}
                         </PaginationButton>
                     ))}
@@ -197,9 +202,18 @@ export function Orcamento () {
             {isAdmin && <AddBtn setIsCreateOpen={setIsCreateOpen} novo ={"Fazer novo orçamento"} />}
             
 
-            <CreateClienteModal open={isCreateOpen} onClose={() => setIsCreateOpen(false)}>
-                <CreateOrcamento orcamentoSelecionado={orcamentoSelecionado} />
-            </CreateClienteModal> 
+            {isCreateOpen && (
+              <AppModal open onClose={() => {
+                setIsCreateOpen(false);
+                setOrcamentoSelecionado(null);
+              }}>
+                <CreateOrcamento
+                  key={orcamentoSelecionado?.id ?? "novo"}
+                  orcamentoSelecionado={orcamentoSelecionado}
+                  setIsCreateOpen={setIsCreateOpen}
+                />
+              </AppModal>
+            )}
         </MainContent>
     )
 }

@@ -1,37 +1,40 @@
-import { useEffect } from "react";
+import type { MouseEvent } from "react";
 import { CancelButton, CloseButton, FieldGroup, FormActions, Input, Label, ModalCard, ModalHeader, ModalOverlay, NoteForm, PriorityOption, PriorityOptions, SubmitButton } from "./CreateAnotacoesStyled";
 import { useEditAnotacoesDiarias, useInsertAnotacoesDiarias } from "./useAnotacoes";
 import { Spinner } from "../../components/spinner/Spinner";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
+import type { AnotacaoDiaria, PrioridadeAnotacao } from "../../models/anotacao";
 
 function getToday() {
   return new Date().toISOString().slice(0, 10);
 }
 
-type Prioridade = "baixo" | "medio" | "alto";
-
 type FormValues = {
   titulo: string;
   data: string;
-  prioridade: Prioridade;
+  prioridade: PrioridadeAnotacao;
 };
 
 export function CreateAnotacaoDiaria({
   open,
   onClose,
   tarefaParaEditar = null,
-}: any) {
+}: {
+  open: boolean;
+  onClose: () => void;
+  tarefaParaEditar?: AnotacaoDiaria | null;
+}) {
   const {
     register,
     reset,
     handleSubmit,
     setValue,
-    watch,
+    control,
   } = useForm<FormValues>({
     defaultValues: {
-      titulo: "",
-      data: getToday(),
-      prioridade: "medio",
+      titulo: tarefaParaEditar?.titulo ?? "",
+      data: tarefaParaEditar?.data ?? getToday(),
+      prioridade: tarefaParaEditar?.prioridade ?? "medio",
     },
   });
 
@@ -41,24 +44,8 @@ export function CreateAnotacaoDiaria({
   const { mutate: mutateEditTarefa, isPending: isEditingTarefa } =
     useEditAnotacoesDiarias();
 
-  const prioridade = watch("prioridade");
+  const prioridade = useWatch({ control, name: "prioridade" });
   const hadId = !!tarefaParaEditar?.id;
-
-  useEffect(() => {
-    if (tarefaParaEditar) {
-      reset({
-        titulo: tarefaParaEditar.titulo ?? "",
-        data: tarefaParaEditar.data ?? getToday(),
-        prioridade: tarefaParaEditar.prioridade ?? "medio",
-      });
-    } else {
-      reset({
-        titulo: "",
-        data: getToday(),
-        prioridade: "medio",
-      });
-    }
-  }, [tarefaParaEditar, reset]);
 
   if (!open) return null;
 
@@ -87,7 +74,7 @@ export function CreateAnotacaoDiaria({
 
   return (
     <ModalOverlay onClick={onClose}>
-      <ModalCard onClick={(e: any) => e.stopPropagation()}>
+      <ModalCard onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}>
         <ModalHeader>
           <div>
             <h2>{hadId ? "Editar tarefa" : "Nova tarefa"}</h2>

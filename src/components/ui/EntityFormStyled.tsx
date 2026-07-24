@@ -1,5 +1,6 @@
 import styled from "styled-components";
 
+// Controles compartilhados pelos formulários de entidades do sistema.
 export const Form = styled.form`
   width: min(720px, 100%);
   margin: 0 auto;
@@ -16,7 +17,7 @@ export const Form = styled.form`
 
   h1 {
     margin: 0 3rem 0.25rem 0;
-    font-size: clamp(1.7rem, 4vw, 2.4rem);
+    font-size: clamp(1.45rem, 4vw, 2rem);
     line-height: 1.2;
     color: ${({ theme }) => theme.colors.primaryDark};
   }
@@ -35,7 +36,7 @@ export const Form = styled.form`
 
     h1 {
       margin-right: 3.2rem;
-      font-size: 1.9rem;
+      font-size: 1.45rem;
     }
   }
 
@@ -43,7 +44,7 @@ export const Form = styled.form`
     padding: 1.1rem;
 
     h1 {
-      font-size: 1.65rem;
+      font-size: 1.3rem;
     }
   }
 `;
@@ -80,13 +81,13 @@ export const FormRow = styled.div`
 `;
 
 export const Label = styled.label`
-  font-size: 1.4rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.textPrimary};
   overflow-wrap: anywhere;
 
   @media (max-width: 640px) {
-    font-size: 1.25rem;
+    font-size: 0.8rem;
   }
 `;
 
@@ -101,7 +102,7 @@ export const Input = styled.input<{ $error?: boolean }>`
   background: ${({ theme }) => theme.colors.surface};
 
   color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: 1.35rem;
+  font-size: 0.86rem;
 
   outline: none;
   transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
@@ -122,7 +123,7 @@ export const Input = styled.input<{ $error?: boolean }>`
 
   @media (max-width: 640px) {
     height: 46px;
-    font-size: 1.35rem;
+    font-size: 1rem;
   }
 `;
 
@@ -148,7 +149,7 @@ export const ErrorMessage = styled.span`
   margin-top: 6px;
   padding: 6px 8px;
 
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   font-weight: 600;
 
   color: ${({ theme }) => theme.colors.error};
@@ -168,7 +169,7 @@ export const SubmitButton = styled.button`
   cursor: pointer;
 
   font-weight: 800;
-  font-size: 1.35rem;
+  font-size: 0.84rem;
   color: ${({ theme }) => theme.colors.surface};
 
   background: ${({ theme }) => theme.colors.accent};
@@ -212,7 +213,7 @@ export const Select = styled.select`
   background-color: ${({ theme }) => theme.colors.surface};
   color: ${({ theme }) => theme.colors.textPrimary};
 
-  font-size: 1.35rem;
+  font-size: 0.86rem;
   font-weight: 500;
   outline: none;
   cursor: pointer;
@@ -246,7 +247,7 @@ export const Select = styled.select`
 
   @media (max-width: 640px) {
     height: 46px;
-    font-size: 1.35rem;
+    font-size: 1rem;
   }
 `;
 
@@ -281,7 +282,7 @@ export const ServicosAdicionados = styled.div`
   span {
     min-width: 0;
     color: ${({ theme }) => theme.colors.textPrimary};
-    font-size: 1.25rem;
+    font-size: 0.8rem;
     line-height: 1.45;
     overflow-wrap: anywhere;
   }

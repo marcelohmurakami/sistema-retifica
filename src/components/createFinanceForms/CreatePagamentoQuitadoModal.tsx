@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   Form,
   FieldGroup,
@@ -7,14 +7,15 @@ import {
   ErrorText,
   CancelButton,
   SubmitButton,
-} from "./ContaReceberModalStyled";
+} from "../ui/FinanceFormStyled";
 import { BaseFinanceModal } from "./BaseFinanceModal";
 import { usePagamentosQuitadosForm } from "./useHooksFinanceForms";
+import type { PagamentoQuitado } from "../../models/financeiro";
 
 type CreatePagamentoQuitadoModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  financaSelecionada?: any;
+  financaSelecionada?: PagamentoQuitado | null;
 };
 
 export function CreatePagamentoQuitadoModal({
@@ -23,26 +24,16 @@ export function CreatePagamentoQuitadoModal({
   financaSelecionada,
 }: CreatePagamentoQuitadoModalProps) {
   const hasId = Boolean(financaSelecionada?.id);
-  const modalRef = useRef<HTMLDivElement>(null);
 
-  const [descricao, setDescricao] = useState("");
-  const [formaPagamento, setFormaPagamento] = useState("");
-  const [valor, setValor] = useState("");
-  const [dataPagamento, setDataPagamento] = useState("");
-  const [observacoes, setObservacoes] = useState("Sem observações");
+  const [descricao, setDescricao] = useState(financaSelecionada?.descricao ?? "");
+  const [formaPagamento, setFormaPagamento] = useState(financaSelecionada?.formaPagamento ?? "");
+  const [valor, setValor] = useState(financaSelecionada ? String(financaSelecionada.valor) : "");
+  const [dataPagamento, setDataPagamento] = useState(financaSelecionada?.dataPagamento ?? "");
+  const [observacoes, setObservacoes] = useState(financaSelecionada?.observacoes ?? "Sem observações");
 
   const { mutate, isPending, error } = usePagamentosQuitadosForm();
 
-  function resetForm() {
-    setDescricao("");
-    setFormaPagamento("");
-    setValor("");
-    setDataPagamento("");
-    setObservacoes("Sem observações");
-  }
-
   function handleClose() {
-    resetForm();
     onClose();
   }
 
@@ -73,50 +64,10 @@ export function CreatePagamentoQuitadoModal({
     );
   }
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        handleClose();
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (financaSelecionada && isOpen) {
-      setDescricao(financaSelecionada.descricao || "");
-      setFormaPagamento(financaSelecionada.formaPagamento || "");
-      setValor(
-        financaSelecionada.valor !== undefined
-          ? String(financaSelecionada.valor)
-          : ""
-      );
-      setDataPagamento(financaSelecionada.dataPagamento || "");
-      setObservacoes(financaSelecionada.observacoes || "");
-    } else if (isOpen) {
-      resetForm();
-    }
-  }, [financaSelecionada, isOpen]);
-
-  function handleOverlayClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      handleClose();
-    }
-  }
-
   if (!isOpen) return null;
 
   return (
-    <div onMouseDown={handleOverlayClick}>
-      <div ref={modalRef}>
-        <BaseFinanceModal
+    <BaseFinanceModal
           isOpen={isOpen}
           title={hasId ? "Editar pagamento quitado" : "Novo pagamento quitado"}
           onClose={handleClose}
@@ -198,8 +149,6 @@ export function CreatePagamentoQuitadoModal({
 
             {error && <ErrorText>{error.message}</ErrorText>}
           </Form>
-        </BaseFinanceModal>
-      </div>
-    </div>
+    </BaseFinanceModal>
   );
 }

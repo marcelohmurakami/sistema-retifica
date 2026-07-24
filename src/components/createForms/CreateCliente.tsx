@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { ButtonContainer, ErrorMessage, Form, FormRow, Input, Label, SubmitButton } from "./CreateClienteStyled";
+import { ButtonContainer, ErrorMessage, Form, FormRow, Input, Label, SubmitButton } from "../ui/EntityFormStyled";
 import type { ClienteType } from "../../models/cliente";
 import { LoadingContainer } from "../spinner/LoadingContainer";
 import { zodResolver } from "@hookform/resolvers/zod";

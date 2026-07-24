@@ -28,6 +28,7 @@ export function Cliente ({cliente, setClienteSelecionado ,setIsCreateOpen, isAdm
             queryClient.invalidateQueries({
                 queryKey: ['cliente'],
             })
+            queryClient.invalidateQueries({ queryKey: ['clientes'] })
             toast.success("Cliente deletado com sucesso")
         },
         onError: () => toast.error("Não foi possível deletar o cliente")

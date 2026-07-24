@@ -1,15 +1,12 @@
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { DeleteButton, EditButton, IconBtnStyled } from "./IconBtnStyled";
-import type { ClienteType } from "../../models/cliente";
-import type { OsType } from "../../models/os";
-
-type IconBtnProps = {
-  cliente: any;
+type IconBtnProps<T extends { id?: number }> = {
+  cliente: T;
   handleDelete: (id: number) => void;
-  handleUpdate: (item: ClienteType | OsType) => void;
+  handleUpdate: (item: T) => void;
 }
 
-export function IconBtn ({ cliente, handleDelete, handleUpdate }: IconBtnProps) {
+export function IconBtn<T extends { id?: number }>({ cliente, handleDelete, handleUpdate }: IconBtnProps<T>) {
     return (
         <IconBtnStyled>
             <EditButton onClick={(e) => {
@@ -22,7 +19,7 @@ export function IconBtn ({ cliente, handleDelete, handleUpdate }: IconBtnProps) 
             <DeleteButton onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                handleDelete(cliente.id);
+                if (cliente.id !== undefined) handleDelete(cliente.id);
             }}>
                 <FiTrash2 />
             </DeleteButton>

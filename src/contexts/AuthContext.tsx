@@ -3,11 +3,14 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import type { ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../services/supabaseApi";
+import { clearEmpresaAtualCache } from "../components/empresas/empresasApi";
 
 type AuthContextType = {
   user: User | null;
@@ -15,7 +18,6 @@ type AuthContextType = {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
-  id?: any;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,9 +27,11 @@ type AuthProviderProps = {
 };
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const currentUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -41,6 +45,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.error("Erro ao recuperar sessão:", error.message);
       }
 
+      currentUserIdRef.current = data.session?.user.id ?? null;
       setSession(data.session ?? null);
       setUser(data.session?.user ?? null);
       setLoading(false);
@@ -51,6 +56,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUserId = session?.user.id ?? null;
+
+      if (currentUserIdRef.current !== nextUserId) {
+        clearEmpresaAtualCache();
+        queryClient.clear();
+        currentUserIdRef.current = nextUserId;
+      }
+
       setSession(session ?? null);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -60,9 +73,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [queryClient]);
 
   async function signIn(email: string, password: string) {
+    clearEmpresaAtualCache();
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -80,6 +94,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   async function signOut() {
     setLoading(true);
+    clearEmpresaAtualCache();
 
     const { error } = await supabase.auth.signOut();
 
@@ -113,6 +128,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+// O hook fica junto do provider para manter a API pública de contexto em um só módulo.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
 

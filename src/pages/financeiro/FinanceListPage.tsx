@@ -48,10 +48,10 @@ type FinanceListPageProps<T> = {
   onDelete?: (item: T) => void;
   onCreate?: () => void;
   buttonLabel?: string;
-  financaSelecionada?: any;
 };
 
 type FinanceItemBase = {
+  id: string | number;
   dataVencimento?: string | null;
   dataRecebimento?: string | null;
   dataPagamento?: string | null;
@@ -104,13 +104,13 @@ export function FinanceListPage<T extends FinanceItemBase>({
           <SearchInput
             placeholder="Buscar..."
             value={searchValue}
-            onChange={(e: any) => onSearchChange?.(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange?.(e.target.value)}
           />
 
           {filterOptions.length > 0 && (
             <FilterSelect
               value={filterValue}
-              onChange={(e: any) => onFilterChange?.(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onFilterChange?.(e.target.value)}
             >
               {filterOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -148,13 +148,15 @@ export function FinanceListPage<T extends FinanceItemBase>({
 
           <Tbody>
             {financas?.length > 0 ? (
-              financas.map((item, index) => (
-                <tr key={index}>
+              financas.map((item) => (
+                <tr key={item.id}>
                   {columns.map((column) => (
                     <Td key={column.key} data-label={column.title}>
                       {column.render
                         ? column.render(item)
-                        : String((item as any)[column.key] ?? "-")}
+                        : String(
+                            (item as unknown as Record<string, unknown>)[column.key] ?? "-"
+                          )}
                     </Td>
                   ))}
 

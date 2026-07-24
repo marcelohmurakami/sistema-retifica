@@ -53,10 +53,17 @@ export const StatusCounters = styled.div`
 export const StatusCounterCard = styled.div<{ situacao: Situacao }>`
   min-width: 0;
   padding: 14px 16px;
-  border-radius: 8px;
+  border-radius: 14px;
   background: ${({ situacao }) => situacaoColors[situacao].background};
   color: ${({ situacao }) => situacaoColors[situacao].color};
   border: 1px solid ${({ situacao }) => situacaoColors[situacao].color}22;
+  box-shadow: ${({ theme }) => theme.shadow.sm};
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${({ theme }) => theme.shadow.md};
+  }
 
   @media (max-width: 420px) {
     padding: 12px;
@@ -83,11 +90,17 @@ export const OSTable = styled.div`
   width: 100%;
   margin-top: 16px;
   overflow-x: auto;
-  border-radius: 12px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 16px;
+  background: ${({ theme }) => theme.colors.surface};
+  box-shadow: ${({ theme }) => theme.shadow.sm};
 
   @media (max-width: 760px) {
     overflow: visible;
+    border: 0;
     border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 `;
 
@@ -97,10 +110,10 @@ export const OSHeader = styled.div`
   min-width: 980px;
   gap: 1rem;
   padding: 14px 16px;
-  background: linear-gradient(90deg, #1e293b, #0f172a);
+  background: linear-gradient(95deg, #242b36, #141922);
   color: white;
   font-weight: 700;
-  border-radius: 12px 12px 0 0;
+  border-radius: 15px 15px 0 0;
 
   @media (max-width: 760px) {
     display: none;
@@ -113,9 +126,9 @@ export const OSTableFooter = styled.div`
   justify-content: space-between;
   gap: 16px;
   padding: 14px 16px;
-  background: linear-gradient(90deg, #0f172a, #111827);
+  background: linear-gradient(95deg, #141922, #0d1117);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 15px 15px;
   color: #e2e8f0;
   flex-wrap: wrap;
 
@@ -152,8 +165,8 @@ export const PaginationButton = styled.button<{ $active?: boolean }>`
   height: 36px;
   padding: 0 12px;
   border: 1px solid
-    ${({ $active }) => ($active ? "#3b82f6" : "rgba(255, 255, 255, 0.08)")};
-  background: ${({ $active }) => ($active ? "#3b82f6" : "#1e293b")};
+    ${({ $active, theme }) => ($active ? theme.colors.accent : "rgba(255, 255, 255, 0.1)")};
+  background: ${({ $active, theme }) => ($active ? theme.colors.accent : "rgba(255, 255, 255, 0.06)")};
   color: #f8fafc;
   border-radius: 10px;
   font-size: 14px;
@@ -162,8 +175,8 @@ export const PaginationButton = styled.button<{ $active?: boolean }>`
   transition: 0.2s ease;
 
   &:hover {
-    background: ${({ $active }) => ($active ? "#2563eb" : "#334155")};
-    border-color: ${({ $active }) => ($active ? "#2563eb" : "#334155")};
+    background: ${({ $active, theme }) => ($active ? theme.colors.accentDark : "rgba(255, 255, 255, 0.12)")};
+    border-color: ${({ $active, theme }) => ($active ? theme.colors.accentDark : "rgba(255, 255, 255, 0.16)")};
   }
 
   &:disabled {
@@ -178,15 +191,14 @@ export const SearchWrapper = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-top: 20px;
-  margin-bottom: 16px;
+  margin: 0 0 1rem;
   flex-wrap: wrap;
 `;
 
 export const SearchBox = styled.div`
   position: relative;
   width: 100%;
-  max-width: 420px;
+  max-width: 520px;
 
   @media (max-width: 640px) {
     max-width: none;
@@ -195,11 +207,11 @@ export const SearchBox = styled.div`
 
 export const SearchInput = styled.input`
   width: 100%;
-  height: 44px;
+  height: 48px;
   padding: 0 16px 0 42px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
-  background-color: ${({ theme }) => theme.colors.surface};
+  border-radius: 14px;
+  background-color: ${({ theme }) => theme.colors.surfaceElevated};
   color: ${({ theme }) => theme.colors.primaryDark};
   font-size: 14px;
   font-weight: 500;
@@ -207,16 +219,16 @@ export const SearchInput = styled.input`
   transition: all 0.2s ease;
 
   &::placeholder {
-    color: #94a3b8;
+    color: ${({ theme }) => theme.colors.textMuted};
   }
 
   &:hover {
-    border-color: #cbd5f5;
+    border-color: color-mix(in srgb, ${({ theme }) => theme.colors.textSecondary} 45%, ${({ theme }) => theme.colors.border});
   }
 
   &:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    border-color: ${({ theme }) => theme.colors.accent};
+    box-shadow: 0 0 0 4px color-mix(in srgb, ${({ theme }) => theme.colors.accent} 12%, transparent);
   }
 `;
 
@@ -226,7 +238,7 @@ export const SearchIcon = styled.span`
   top: 50%;
   transform: translateY(-50%);
   font-size: 16px;
-  color: #94a3b8;
+  color: ${({ theme }) => theme.colors.textMuted};
   pointer-events: none;
 `;
 
@@ -258,8 +270,8 @@ export const FiltroSituacaoLabel = styled.label`
   gap: 6px;
   padding: 8px 10px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
-  background: ${({ theme }) => theme.colors.surface};
+  border-radius: 10px;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   color: ${({ theme }) => theme.colors.textPrimary};
   font-size: 13px;
   font-weight: 600;
@@ -272,7 +284,7 @@ export const FiltroSituacaoLabel = styled.label`
   }
 
   input {
-    accent-color: #2563eb;
+    accent-color: ${({ theme }) => theme.colors.accent};
     cursor: pointer;
   }
 

@@ -47,7 +47,6 @@ import {
 } from "./HomeStyled";
 import { useGetAllClientes } from "../clientes/useClientes";
 import { useGetAllOs } from "../ordensDeServico/useOs";
-import { useGetContasReceber } from "../financeiro/useContasReceber";
 import { useMemo, useState } from "react";
 import {
   BarChart,
@@ -58,14 +57,14 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import { useTheme } from "styled-components";
 import { formatDate } from "../../utils/formatDate";
-import { CreateClienteModal } from "../../components/createForms/CreateClienteModal";
+import { AppModal } from "../../components/modal/AppModal";
 import { CreateOS } from "../../components/createForms/CreateOS";
 import { CreateCliente } from "../../components/createForms/CreateCliente";
 import { Link } from "react-router";
-import { useGetPagamentoRecebido } from "../financeiro/usePagamentoRecebido";
-import { useGetPagamentoQuitado } from "../financeiro/usePagamentoQuitado";
 import { useEmpresaAtual } from "../../components/empresas/useEmpresas";
+import { useGetPagamentosPeriodo, useGetRecebimentosPeriodo } from "../relatorios/useRelatorios";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", {
@@ -74,12 +73,26 @@ function formatCurrency(value: number) {
   });
 }
 
+function somarValores<T>(
+  lista: T[] | undefined,
+  getData: (item: T) => string | null | undefined,
+  getValor: (item: T) => number | string | null | undefined,
+  anoMes: string,
+) {
+  return (lista ?? [])
+    .filter((item) => getData(item)?.slice(0, 7) === anoMes)
+    .reduce((total, item) => total + Number(getValor(item) || 0), 0);
+}
+
 export function Home() {
+  const theme = useTheme();
   const { count: countClientes } = useGetAllClientes();
   const { data: os, count: countOs } = useGetAllOs();
-  const { data: contasReceber } = useGetContasReceber();
-  const { data: pagamentosQuitados } = useGetPagamentoQuitado();
-  const { data: pagamentosRecebidos } = useGetPagamentoRecebido();
+  const { data: user } = useEmpresaAtual();
+  const isAdmin = user?.role === "financeiro_master";
+  const isComunUser = user?.role === "user";
+  const { data: pagamentosQuitados } = useGetPagamentosPeriodo("mes_atual", isAdmin);
+  const { data: pagamentosRecebidos } = useGetRecebimentosPeriodo("mes_atual", isAdmin);
 
   const [ isCreateOpen, setIsCreateOpen ] = useState(false);
   const [ isCreateClienteOpen, setIsCreateClienteOpen ] = useState(false);
@@ -88,55 +101,25 @@ const hoje = new Date();
 const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
 const ultimasOs = os?.slice(0, 5) || [];
 
-function getAnoMes(date?: string | null) {
-  if (!date) return null;
-
-  return date.slice(0, 7);
-}
-
-function somarValores<T>(
-  lista: T[] | undefined,
-  campoData: keyof T,
-  campoValor: keyof T,
-  anoMes = mesAtual
-) {
-  return (
-    lista
-      ?.filter((item: any) => getAnoMes(item[campoData]) === anoMes)
-      .reduce(
-        (total: number, item: any) => total + Number(item[campoValor] || 0),
-        0
-      ) || 0
-  );
-}
-
-let faturamentoOSmes = somarValores(os, "dataServico", "valorServico");
-
-let faturamentoMes = somarValores(
-  contasReceber,
-  "dataVencimento",
-  "valor"
+let faturamentoOSmes = somarValores(
+  os,
+  (item) => item.dataServico,
+  (item) => item.valorServico,
+  mesAtual,
 );
 
-let totalRecebido = somarValores(
-  pagamentosQuitados,
-  "dataPagamento",
-  "valor"
-);
+let totalRecebido = pagamentosRecebidos?.reduce(
+  (total, item) => total + Number(item.valor || 0),
+  0,
+) ?? 0;
 
-let totalQuitado = somarValores(
-  pagamentosRecebidos,
-  "dataPagamento",
-  "valor"
-);
-
-const { data: user } = useEmpresaAtual();
-const isAdmin = user?.role === "financeiro_master";
-const isComunUser = user?.role === "user";
+let totalQuitado = pagamentosQuitados?.reduce(
+  (total, item) => total + Number(item.valor || 0),
+  0,
+) ?? 0;
 
 if (!isAdmin) {
   faturamentoOSmes = 0;
-  faturamentoMes = 0;
   totalRecebido = 0;
   totalQuitado = 0;
 }
@@ -161,7 +144,12 @@ const faturamentoUltimos12Meses = useMemo(() => {
 
     meses.push({
       mes: label,
-      faturamento: somarValores(os, "dataServico", "valorServico", anoMes),
+      faturamento: somarValores(
+        os,
+        (item) => item.dataServico,
+        (item) => item.valorServico,
+        anoMes,
+      ),
     });
   }
 
@@ -222,8 +210,8 @@ const faturamentoUltimos12Meses = useMemo(() => {
             <FaBoxes />
           </CardIcon>
           <CardContent>
-            <CardLabel>Faturamento líquido do mês</CardLabel>
-            <CardValue>{formatCurrency((Number(faturamentoMes) + Number(faturamentoOSmes)) * 0.8)}</CardValue>
+              <CardLabel>Resultado líquido do mês</CardLabel>
+              <CardValue>{formatCurrency(resultado)}</CardValue>
             <CardHelper>Entradas menos saídas no período</CardHelper>
           </CardContent>
         </SummaryCard>}
@@ -249,9 +237,11 @@ const faturamentoUltimos12Meses = useMemo(() => {
           <ChartWrapper>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={faturamentoUltimos12Meses}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mes" />
+                <CartesianGrid stroke={theme.colors.border} strokeDasharray="4 6" vertical={false} />
+                <XAxis dataKey="mes" axisLine={false} tickLine={false} />
                 <YAxis
+                  axisLine={false}
+                  tickLine={false}
                   tickFormatter={(value) =>
                     Number(value).toLocaleString("pt-BR", {
                       notation: "compact",
@@ -259,6 +249,14 @@ const faturamentoUltimos12Meses = useMemo(() => {
                   }
                 />
                 <Tooltip
+                  cursor={{ fill: theme.colors.accentSoft }}
+                  contentStyle={{
+                    background: theme.colors.surfaceElevated,
+                    border: `1px solid ${theme.colors.border}`,
+                    borderRadius: 14,
+                    boxShadow: theme.shadow.md,
+                    color: theme.colors.textPrimary,
+                  }}
                   formatter={(value) =>
                     Number(value).toLocaleString("pt-BR", {
                       style: "currency",
@@ -270,6 +268,7 @@ const faturamentoUltimos12Meses = useMemo(() => {
                 <Bar
                   dataKey="faturamento"
                   name="Faturamento"
+                  fill={theme.colors.accent}
                   radius={[8, 8, 0, 0]}
                 />
               </BarChart>
@@ -283,11 +282,11 @@ const faturamentoUltimos12Meses = useMemo(() => {
               <FaClock />
               Ordens recentes
             </SectionTitle>
-            <SectionAction>Ver todas</SectionAction>
+            <SectionAction as={Link} to="/ordens-de-serviço">Ver todas</SectionAction>
           </SectionHeader>
 
           <RecentList>
-            {ultimasOs.map((ordem: any) => (
+            {ultimasOs.map((ordem) => (
               <RecentItem key={ordem.id}>
                 <RecentInfo>
                   <RecentTitle>{ordem.Clientes.cliente}</RecentTitle>
@@ -333,8 +332,8 @@ const faturamentoUltimos12Meses = useMemo(() => {
               </QuickActionText>
             </QuickActionCard>
 
-            <Link to="/financeiro">
-              <QuickActionCard disabled={isComunUser}>
+            {isAdmin && <Link to="/financeiro">
+              <QuickActionCard>
                 <QuickActionIcon $variant="green">
                   <FaDollarSign />
                 </QuickActionIcon>
@@ -343,10 +342,10 @@ const faturamentoUltimos12Meses = useMemo(() => {
                   Conferir entradas, saídas e contas pendentes.
                 </QuickActionText>
               </QuickActionCard>
-            </Link>
+            </Link>}
 
             <Link to="/estoque">
-              <QuickActionCard disabled={isComunUser}>
+              <QuickActionCard>
                 <QuickActionIcon $variant="red">
                   <FaTools />
                 </QuickActionIcon>
@@ -390,18 +389,22 @@ const faturamentoUltimos12Meses = useMemo(() => {
       </MainGrid>
     </PageContainer>
 
-    <CreateClienteModal open={isCreateOpen} onClose={() => setIsCreateOpen(false)}>
+    {isCreateOpen && (
+      <AppModal open onClose={() => setIsCreateOpen(false)}>
         <CreateOS />
-    </CreateClienteModal>
+      </AppModal>
+    )}
 
-    <CreateClienteModal
-        open={isCreateClienteOpen}
+    {isCreateClienteOpen && (
+      <AppModal
+        open
         onClose={() => {
             setIsCreateClienteOpen(false);
         }}
         >
-        <CreateCliente setIsCreateOpen={setIsCreateOpen} />
-    </CreateClienteModal>
+        <CreateCliente setIsCreateOpen={setIsCreateClienteOpen} />
+      </AppModal>
+    )}
   </>
   );
 }

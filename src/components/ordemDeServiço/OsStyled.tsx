@@ -8,15 +8,15 @@ export const OSRow = styled.div`
   align-items: center;
   background: ${({ theme }) => theme.colors.surface};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  transition: 0.2s ease;
+  transition: background 0.18s ease, transform 0.18s ease;
   gap: 1rem;
 
   &:nth-child(even) {
-    background: ${({ theme }) => theme.colors.background};
+    background: color-mix(in srgb, ${({ theme }) => theme.colors.background} 55%, ${({ theme }) => theme.colors.surface});
   }
 
   &:hover {
-    background: ${({ theme }) => theme.colors.border};
+    background: ${({ theme }) => theme.colors.accentSoft};
   }
 
   @media (max-width: 760px) {
@@ -31,7 +31,7 @@ export const OSRow = styled.div`
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: 14px;
     background: ${({ theme }) => theme.colors.surface};
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+    box-shadow: ${({ theme }) => theme.shadow.sm};
 
     &:nth-child(even) {
       background: ${({ theme }) => theme.colors.surface};
@@ -49,8 +49,8 @@ export const OSInfo = styled.p`
   margin: 0;
 
   color: ${({ theme }) => theme.colors.primaryDark};
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 0.8rem;
+  font-weight: 590;
   line-height: 1.35;
 
   white-space: nowrap;
@@ -61,14 +61,14 @@ export const OSInfo = styled.p`
     white-space: normal;
     overflow: visible;
     text-overflow: initial;
-    font-size: 1.35rem;
+    font-size: 0.88rem;
 
     &::before {
       display: block;
       margin-bottom: 0.22rem;
       color: ${({ theme }) => theme.colors.textSecondary};
-      font-size: 1.05rem;
-      font-weight: 800;
+      font-size: 0.64rem;
+      font-weight: 740;
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }

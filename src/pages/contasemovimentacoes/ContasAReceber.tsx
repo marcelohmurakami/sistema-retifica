@@ -4,18 +4,20 @@ import { MoneyText } from "../financeiro/FinanceListPageStyled";
 import { formatCurrency, formatDate } from "../financeiro/formatters";
 import { useGetContasReceber } from "../financeiro/useContasReceber";
 import { CreateContaReceberModal } from "../../components/createFinanceForms/CreateContaReceberModal";
-import { deleteContasPagar } from "../financeiro/contasPagarApi";
+import { useDeleteContasReceber } from "../financeiro/useContasReceber";
+import type { ContaReceber } from "../../models/financeiro";
 
 export function ContasAReceber() {
   const { data } = useGetContasReceber();
+  const { mutate: deleteContaReceber } = useDeleteContasReceber();
 
   const [ openModal, setOpenModal ] = useState(false);
-  const [financaSelecionada, setFinancaSelecionada] = useState<any>(null);
+  const [financaSelecionada, setFinancaSelecionada] = useState<ContaReceber | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("");
 
   const filteredData = useMemo(() => {
-    return data?.filter((item: any) => {
+    return data.filter((item) => {
       const cliente = item.OrdensServico?.Clientes?.cliente?.toLowerCase() || "";
       const descricao = item.descricao?.toLowerCase() || "";
       const searchTerm = search.toLowerCase();
@@ -37,22 +39,22 @@ export function ContasAReceber() {
     setOpenModal(true);
   }
 
-  function handleEdit(item: any) {
+  function handleEdit(item: ContaReceber) {
     setFinancaSelecionada(item);
     setOpenModal(true);
   }
 
-  function handleDelete(item: any) {
+  function handleDelete(item: ContaReceber) {
     const confirmDelete = window.confirm(
       `Tem certeza que deseja excluir o registro?`
     );
 
     if (!confirmDelete) return;
 
-    deleteContasPagar(item.id);
+    deleteContaReceber(item.id);
   }
 
-  function handleStatus(item: any) {
+  function handleStatus(item: ContaReceber) {
     const valorRecebido = Number(item?.valorRecebido || 0)
     const valorTotal = Number(item?.valor || 0)
 
@@ -93,7 +95,7 @@ export function ContasAReceber() {
         {
           key: "cliente",
           title: "Cliente",
-          render: (item: any) => item.OrdensServico?.Clientes?.cliente || "-",
+          render: (item) => item.OrdensServico?.Clientes?.cliente || "-",
         },
         {
           key: "descricao",
@@ -102,27 +104,27 @@ export function ContasAReceber() {
         {
           key: "valorTotal",
           title: "Recebido",
-          render: (item: any) => <MoneyText>{formatCurrency(item.valorRecebido)}</MoneyText>,
+          render: (item) => <MoneyText>{formatCurrency(item.valorRecebido)}</MoneyText>,
         },
         {
           key: "valorRecebido",
           title: "Valor total",
-          render: (item: any) => <MoneyText>{formatCurrency(item?.valor)}</MoneyText>,
+          render: (item) => <MoneyText>{formatCurrency(item.valor)}</MoneyText>,
         },
         {
           key: "valorRestante",
           title: "Valor restante",
-          render: (item: any) => <MoneyText>{formatCurrency(item.valor - item.valorRecebido)}</MoneyText>,
+          render: (item) => <MoneyText>{formatCurrency(item.valor - item.valorRecebido)}</MoneyText>,
         },
         {
           key: "dataVencimento",
           title: "Vencimento",
-          render: (item: any) => formatDate(item.dataPagamento),
+          render: (item) => formatDate(item.dataPagamento),
         },
         {
           key: "status",
           title: "Status",
-          render: (item: any) => {
+          render: (item) => {
             const status = handleStatus(item)
 
             return (
@@ -137,11 +139,14 @@ export function ContasAReceber() {
       onDelete={handleDelete}
       onCreate={handleCreate}
     />
-    <CreateContaReceberModal
-      isOpen={openModal}
-      onClose={() => setOpenModal(false)}
-      financaSelecionada={financaSelecionada}
-    />
+    {openModal && (
+      <CreateContaReceberModal
+        key={financaSelecionada?.id ?? "new"}
+        isOpen
+        onClose={() => setOpenModal(false)}
+        financaSelecionada={financaSelecionada}
+      />
+    )}
     </>
   );
 }

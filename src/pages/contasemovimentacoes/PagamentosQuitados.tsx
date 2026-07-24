@@ -5,26 +5,28 @@ import { formatCurrency, formatDate } from "../financeiro/formatters";
 import { useGetPagamentoQuitado } from "../financeiro/usePagamentoQuitado";
 import { CreatePagamentoQuitadoModal } from "../../components/createFinanceForms/CreatePagamentoQuitadoModal";
 import { deletePagamentoQuitado } from "../financeiro/pagamentoQuitadoApi";
+import type { PagamentoQuitado } from "../../models/financeiro";
 
 export function PagamentosQuitados() {
   const { data } = useGetPagamentoQuitado();
 
   const [search, setSearch] = useState("");
-  const [financaSelecionada, setFinancaSelecionada] = useState<any>(null);
+  const [financaSelecionada, setFinancaSelecionada] = useState<PagamentoQuitado | null>(null);
   const [filter, setFilter] = useState("");
   const [openModal, setOpenModal] = useState(false);
 
   const filteredData = useMemo(() => {
-    return data?.filter((item: any) => {
+    return data.filter((item) => {
       const searchTerm = search.toLowerCase();
+      const formaPagamento = item.formaPagamento?.toLowerCase() ?? "";
 
       const matchesSearch =
         !searchTerm ||
         String(item.id).includes(searchTerm) ||
-        String(item.idContaPagar).includes(searchTerm) ||
-        item.metodoPag.toLowerCase().includes(searchTerm);
+        String(item.idContaPagar ?? "").includes(searchTerm) ||
+        formaPagamento.includes(searchTerm);
 
-      const matchesFilter = !filter || item.metodoPag === filter;
+      const matchesFilter = !filter || formaPagamento === filter;
 
       return matchesSearch && matchesFilter;
     });
@@ -35,12 +37,12 @@ export function PagamentosQuitados() {
     setOpenModal(true);
   }
 
-  function handleEdit(item: any) {
+  function handleEdit(item: PagamentoQuitado) {
     setFinancaSelecionada(item);
     setOpenModal(true);
   }
 
-  function handleDelete(item: any) {
+  function handleDelete(item: PagamentoQuitado) {
     const confirmDelete = window.confirm(
       `Tem certeza que deseja excluir o registro?`
     );
@@ -69,28 +71,31 @@ export function PagamentosQuitados() {
       ]}
       columns={[
         { key: "id", title: "ID" },
-        { key: "descricao", title: "Descrição",  render: (item: any) => item.descricao },
+        { key: "descricao", title: "Descrição",  render: (item) => item.descricao },
         {
           key: "valorPago",
           title: "Valor pago",
-          render: (item: any) => <MoneyText>{formatCurrency(item.valor)}</MoneyText>,
+          render: (item) => <MoneyText>{formatCurrency(item.valor)}</MoneyText>,
         },
-        { key: "metodoPagamento", title: "Método", render: (item: any) => formatDate(item.formaPagamento) },
+        { key: "formaPagamento", title: "Método" },
         {
           key: "dataPagamento",
           title: "Pago em",
-          render: (item: any) => formatDate(item.dataPagamento),
+          render: (item) => formatDate(item.dataPagamento),
         },
       ]}
       onEdit={handleEdit}
       onDelete={handleDelete}
       onCreate={handleCreate}
     />
-    <CreatePagamentoQuitadoModal
-      isOpen={openModal}
-      onClose={() => setOpenModal(false)}
-      financaSelecionada={financaSelecionada}
-    />
+    {openModal && (
+      <CreatePagamentoQuitadoModal
+        key={financaSelecionada?.id ?? "new"}
+        isOpen
+        onClose={() => setOpenModal(false)}
+        financaSelecionada={financaSelecionada}
+      />
+    )}
     </>
   );
 }

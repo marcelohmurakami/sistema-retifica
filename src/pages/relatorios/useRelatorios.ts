@@ -23,12 +23,12 @@ export function useGetOrdensDeServico(periodo: PeriodoRelatorio) {
   });
 }
 
-export function useGetRecebimentosPeriodo(periodo: PeriodoRelatorio) {
+export function useGetRecebimentosPeriodo(periodo: PeriodoRelatorio, enabled = true) {
     const { user } = useAuth();
 
     return useQuery({
         queryKey: ["relatoriosRecebimentos", user?.id, periodo],
-        enabled: !!user?.id,
+        enabled: !!user?.id && enabled,
         staleTime: 0,
         queryFn: async () => {
             const recebimentos = await getRecebimentosPeriodo(periodo);
@@ -37,12 +37,12 @@ export function useGetRecebimentosPeriodo(periodo: PeriodoRelatorio) {
     })
 }
 
-export function useGetPagamentosPeriodo(periodo: PeriodoRelatorio) {
+export function useGetPagamentosPeriodo(periodo: PeriodoRelatorio, enabled = true) {
     const { user } = useAuth();
 
     return useQuery({
         queryKey: ["relatoriosPagamentos", user?.id, periodo],
-        enabled: !!user?.id,
+        enabled: !!user?.id && enabled,
         staleTime: 0,
         queryFn: async () => {
             const pagamentos = await getPagamentosQuitadosPeriodo(periodo);

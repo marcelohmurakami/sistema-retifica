@@ -59,6 +59,8 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// O hook fica junto do provider para manter a API pública de tema em um só módulo.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useThemeMode() {
   const context = useContext(ThemeModeContext);
 

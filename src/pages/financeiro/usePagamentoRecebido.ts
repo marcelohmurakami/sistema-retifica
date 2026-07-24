@@ -1,21 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deletePagamentoRecebido, getPagamentoRecebido } from "./pagamentoRecebidoApi";
 import { useAuth } from "../../contexts/AuthContext";
+import type { PagamentoRecebido } from "../../models/financeiro";
+import toast from "react-hot-toast";
 
 export function useGetPagamentoRecebido() {
   const { user } = useAuth();
 
   const {
-    data,
+    data = [],
     isLoading: isLoadingPagamentoRecebido,
     error,
-  } = useQuery<any>({
+  } = useQuery<PagamentoRecebido[]>({
     queryKey: ["PagamentoRecebido", "lista", user?.id],
     queryFn: getPagamentoRecebido,
     enabled: !!user?.id,
   });
-
-  console.log(data)
 
   return { data, isLoadingPagamentoRecebido, error };
 }
@@ -30,11 +30,11 @@ export function useDeletePagamentoRecebido() {
       queryClient.invalidateQueries({
         queryKey: ["PagamentoRecebido"],
       });
+      queryClient.invalidateQueries({ queryKey: ["relatoriosRecebimentos"] });
     },
 
-    onError: (error) => {
-      console.log("Erro ao excluir pagamento recebido:", error);
-      alert("Erro ao excluir pagamento recebido");
+    onError: () => {
+      toast.error("Não foi possível excluir o pagamento recebido.");
     },
   });
 

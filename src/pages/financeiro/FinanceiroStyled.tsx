@@ -1,10 +1,11 @@
 import styled, { css } from "styled-components";
 
 export const PageContainer = styled.div`
-  width: 100%;
-  padding: clamp(1rem, 3vw, 2rem);
+  width: min(100%, ${({ theme }) => theme.layout.containerMax});
+  margin: 0 auto;
+  padding: clamp(1rem, 2.8vw, 2.25rem);
   background: ${({ theme }) => theme.colors.background};
-  min-height: 100vh;
+  min-height: calc(100dvh - ${({ theme }) => theme.layout.headerHeight});
   color: ${({ theme }) => theme.colors.textPrimary};
   overflow-x: hidden;
 `;
@@ -31,15 +32,16 @@ export const HeaderLeft = styled.div`
 `;
 
 export const PageTitle = styled.h1`
-  font-size: clamp(2rem, 5.2vw, 2.4rem);
-  font-weight: 800;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 760;
+  letter-spacing: -0.045em;
   color: ${({ theme }) => theme.colors.primaryDark};
   margin: 0;
   overflow-wrap: anywhere;
 `;
 
 export const PageSubtitle = styled.p`
-  font-size: clamp(1.25rem, 3.4vw, 1.45rem);
+  font-size: clamp(0.82rem, 2vw, 0.95rem);
   color: ${({ theme }) => theme.colors.textSecondary};
   margin: 0;
   overflow-wrap: anywhere;
@@ -67,7 +69,7 @@ export const MonthInput = styled.input`
   padding: 0 ${({ theme }) => theme.spacing[4]};
   background: ${({ theme }) => theme.colors.surface};
   color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: 1.25rem;
+  font-size: 0.8rem;
 
   @media (max-width: 640px) {
     width: 100%;
@@ -79,7 +81,7 @@ export const ActionButton = styled.button<{ $variant?: "secondary" }>`
   border-radius: 14px;
   padding: 0.9rem 1.2rem;
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 0.8rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -102,8 +104,9 @@ export const ActionButton = styled.button<{ $variant?: "secondary" }>`
           }
         `
       : css`
-          background: ${theme.colors.accent};
+          background: linear-gradient(135deg, ${theme.colors.accent}, ${theme.colors.accentDark});
           color: white;
+          box-shadow: 0 9px 22px rgba(217, 76, 19, 0.2);
 
           &:hover {
             background: ${theme.colors.accentDark};
@@ -137,6 +140,14 @@ export const SummaryCard = styled.div`
   display: flex;
   gap: 1rem;
   min-width: 0;
+  box-shadow: ${({ theme }) => theme.shadow.sm};
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, ${({ theme }) => theme.colors.accent} 25%, ${({ theme }) => theme.colors.border});
+    box-shadow: ${({ theme }) => theme.shadow.md};
+    transform: translateY(-2px);
+  }
 
   @media (max-width: 420px) {
     align-items: flex-start;
@@ -156,7 +167,7 @@ export const CardIconWrapper = styled.div<{
   border-radius: 16px;
   display: grid;
   place-items: center;
-  font-size: 1.15rem;
+  font-size: 1rem;
 
   ${({ theme, $type }) => {
     if ($type === "success") {
@@ -194,12 +205,13 @@ export const CardContent = styled.div`
 `;
 
 export const CardLabel = styled.span`
-  font-size: 1.2rem;
+  font-size: 0.76rem;
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 export const CardValue = styled.strong<{ $positive?: boolean }>`
-  font-size: clamp(1.7rem, 5vw, 2rem);
+  font-size: clamp(1.45rem, 4vw, 1.8rem);
+  letter-spacing: -0.035em;
   overflow-wrap: anywhere;
   color: ${({ theme, $positive }) =>
     $positive === undefined
@@ -210,7 +222,7 @@ export const CardValue = styled.strong<{ $positive?: boolean }>`
 `;
 
 export const CardHelper = styled.span`
-  font-size: 1.1rem;
+  font-size: 0.71rem;
   color: ${({ theme }) => theme.colors.textSecondary};
   overflow-wrap: anywhere;
 `;
@@ -231,6 +243,7 @@ export const FiltersCard = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 20px;
   padding: 1.2rem;
+  box-shadow: ${({ theme }) => theme.shadow.sm};
 `;
 
 export const FluxoCard = styled.div`
@@ -238,6 +251,7 @@ export const FluxoCard = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 20px;
   padding: 1.2rem;
+  box-shadow: ${({ theme }) => theme.shadow.sm};
 `;
 
 export const SectionHeader = styled.div`
@@ -251,7 +265,7 @@ export const SectionHeader = styled.div`
 export const SectionTitle = styled.h2`
   margin: 0;
   min-width: 0;
-  font-size: clamp(1.25rem, 3.5vw, 1.45rem);
+  font-size: clamp(1rem, 2vw, 1.12rem);
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -264,7 +278,7 @@ export const SectionBadge = styled.span`
   color: white;
   border-radius: 999px;
   padding: 0 0.6rem;
-  font-size: 1.1rem;
+  font-size: 0.7rem;
 `;
 
 export const FiltersRow = styled.div`
@@ -350,7 +364,7 @@ export const FinanceItemMain = styled.div`
 
 export const FinanceTitle = styled.strong`
   display: block;
-  font-size: 1.25rem;
+  font-size: 0.82rem;
   overflow-wrap: anywhere;
 `;
 
@@ -359,7 +373,7 @@ export const FinanceMeta = styled.div`
   align-items: center;
   flex-wrap: wrap;
   gap: 0.35rem;
-  font-size: 1.08rem;
+  font-size: 0.72rem;
   color: ${({ theme }) => theme.colors.textSecondary};
 
   span {
@@ -389,11 +403,11 @@ export const FinanceItemAside = styled.div`
 `;
 
 export const FinanceValue = styled.strong`
-  font-size: 1.2rem;
+  font-size: 0.84rem;
 `;
 
 export const StatusBadge = styled.span<{ $status: string }>`
-  font-size: 1.05rem;
+  font-size: 0.7rem;
 `;
 
 export const EmptyState = styled.div`
@@ -441,13 +455,13 @@ export const MovementsTable = styled.table`
   }
 
   th {
-    font-size: 1rem;
+    font-size: 0.7rem;
     color: ${({ theme }) => theme.colors.textSecondary};
     background: ${({ theme }) => theme.colors.background};
   }
 
   td {
-    font-size: 1.05rem;
+    font-size: 0.76rem;
     color: ${({ theme }) => theme.colors.textPrimary};
   }
 
@@ -455,7 +469,7 @@ export const MovementsTable = styled.table`
     th,
     td {
       padding: 0.7rem 0.35rem;
-      font-size: 1rem;
+      font-size: 0.72rem;
     }
   }
 `;
@@ -492,7 +506,7 @@ export const InfoItem = styled.div`
   span,
   strong {
     min-width: 0;
-    font-size: 1.15rem;
+    font-size: 0.76rem;
     overflow-wrap: anywhere;
   }
 `;
@@ -511,13 +525,13 @@ export const FluxoInfo = styled.div`
 
   span {
     color: ${({ theme }) => theme.colors.textSecondary};
-    font-size: 1.15rem;
+    font-size: 0.76rem;
     font-weight: 600;
   }
 
   strong {
     color: ${({ theme }) => theme.colors.primaryDark};
-    font-size: 1.2rem;
+    font-size: 0.82rem;
   }
 `;
 
@@ -552,14 +566,14 @@ export const FluxoFooter = styled.div<{ $positive: boolean }>`
   margin-top: 0.5rem;
   padding-top: 0.85rem;
   border-top: 1px solid ${({ theme }) => theme.colors.border};
-  font-size: 1.15rem;
+  font-size: 0.76rem;
   font-weight: 600;
 
   color: ${({ theme, $positive }) =>
     $positive ? theme.colors.success : theme.colors.error};
 
   strong {
-    font-size: 1.2rem;
+    font-size: 0.84rem;
   }
 `;
 
@@ -610,6 +624,6 @@ export const VerTodosButton = styled.button`
 
   @media (max-width: 640px) {
     width: 100%;
-    font-size: 1.25rem;
+    font-size: 0.84rem;
   }
 `;

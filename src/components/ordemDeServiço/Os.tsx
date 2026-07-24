@@ -24,12 +24,15 @@ export function OrdemDeServiço ({ OS, setOsSelecionada, setIsCreateOpen, isAdmi
             queryClient.invalidateQueries({
                 queryKey: ['OrdemDeServiço'],
             })
+            queryClient.invalidateQueries({ queryKey: ['os'] })
+            queryClient.invalidateQueries({ queryKey: ['Estoque'] })
+            queryClient.invalidateQueries({ queryKey: ['relatorios'] })
             toast.success("Ordem de serviço deletada com sucesso")
         },
         onError: () => toast.error("Não foi possível deletar a ordem de serviço")
     })
 
-    function handleUpdate(data: any) {
+    function handleUpdate(data: OsType) {
         setOsSelecionada(data);
         setIsCreateOpen(true);
     }
@@ -43,8 +46,8 @@ export function OrdemDeServiço ({ OS, setOsSelecionada, setIsCreateOpen, isAdmi
                 <OSInfo>{OS.Clientes.cliente}</OSInfo>
                 <OSInfo>{formatDate(OS.dataServico)}</OSInfo>
                 <OSInfo>{OS.motor}</OSInfo>
-                <OSInfo>{`R$${OS.valorServico},00`}</OSInfo>
-                <OSInfo>{OS.dataVencimento}</OSInfo>
+                <OSInfo>{Number(OS.valorServico).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</OSInfo>
+                <OSInfo>{formatDate(OS.dataVencimento)}</OSInfo>
                 {isAdmin && (
                     <IconBtn cliente={OS} handleUpdate={handleUpdate} handleDelete={() => handleDelete(OS.id, mutate, "ordem de serviço")} />
                 )}

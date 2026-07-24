@@ -2,6 +2,9 @@ import { getEmpresaIdAtual } from "../../components/empresas/empresasApi";
 import type { ClienteType } from "../../models/cliente";
 import { supabase } from "../../services/supabaseApi";
 import { PAGE_SIZE } from "../../utils/pageSize";
+import { getPaginationRange, parseSort } from "../../utils/queryPagination";
+
+const CLIENT_SORT_FIELDS = new Set(["id", "cliente"]);
 
 type InsertClienteProps = {
   cliente: string;
@@ -14,33 +17,32 @@ type InsertClienteProps = {
 
 type UpdateClienteProps = Omit<ClienteType, "created_at">;
 
-export async function getAllClientes() {
+export async function getAllClientesCount() {
   const empresaId = await getEmpresaIdAtual();
 
-  const { data, error } = await supabase
+  const { count, error } = await supabase
     .from("Clientes")
-    .select("*")
+    .select("id", { count: "exact", head: true })
     .eq("empresa_id", empresaId)
     
     if (error) throw new Error("Não foi possível carregar os dados dos clientes.");
 
-    return data ?? [];
+    return count ?? 0;
 }
 
 export async function getClientes(sortByString: string, page: number, searchInput: string = "") {
   const empresaId = await getEmpresaIdAtual();
-
-  const sortBy = sortByString.split('-')[0];
-  const direction = sortByString.split('-')[1] === "asc" || sortBy === 'id' ? true : false;
-
-  const from = Math.max((page - 1) * PAGE_SIZE, 0);
-  const to = from + PAGE_SIZE - 1;
+  const { field: sortBy, ascending } = parseSort(
+    sortByString,
+    CLIENT_SORT_FIELDS,
+  );
+  const { from, to } = getPaginationRange(page, PAGE_SIZE);
 
   let query = supabase
     .from("Clientes")
     .select("*", { count: "exact" })
     .eq("empresa_id", empresaId)
-    .order(sortBy, {ascending: direction});
+    .order(sortBy, { ascending });
 
   if (searchInput.trim()) {
     query = query.ilike(
@@ -58,7 +60,7 @@ export async function getClientes(sortByString: string, page: number, searchInpu
   };
 }
 
-export async function getCliente(id: Number) {
+export async function getCliente(id: number) {
   const empresaId = await getEmpresaIdAtual();
 
   const { data, error } = await supabase

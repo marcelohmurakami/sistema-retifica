@@ -6,19 +6,25 @@ import { BackButton, DetalhesContainer, DetalhesGrid, FlexButtons, InfoCard, Inf
 import type { ClienteType } from "../../models/cliente";
 import { formatCpfCnpj } from "../../utils/formatcpfcnpj";
 import { formatDate } from "../../utils/formatDate";
+import type { OsType } from "../../models/os";
+import { useAuth } from "../../contexts/AuthContext";
+import { queryKeys } from "../../services/queryKeys";
 
 export function ClienteDetails () {
+    const { user } = useAuth();
     const { id } = useParams();
     const idCliente = Number(id);
 
     const { data, isLoading, isError, error } = useQuery<ClienteType>({
-        queryKey: ['cliente', idCliente],
+        queryKey: queryKeys.clientes.detail(user?.id, idCliente),
         queryFn: () => getCliente(idCliente),
+        enabled: !!user?.id && !!idCliente,
     })
 
-    const { data: clientesOS, isLoading: isLoadingClientes } = useQuery<any>({
-      queryKey: ['OrdemDeServiço', idCliente],
-      queryFn: () => getClientesOS(idCliente)
+    const { data: clientesOS = [], isLoading: isLoadingClientes } = useQuery<OsType[]>({
+      queryKey: queryKeys.clientes.ordensServico(user?.id, idCliente),
+      queryFn: () => getClientesOS(idCliente),
+      enabled: !!user?.id && !!idCliente,
     })
 
     if(isLoading || isLoadingClientes) return <LoadingContainer />
@@ -86,14 +92,14 @@ export function ClienteDetails () {
 
             <InfoCard style={{ gridColumn: "1 / -1" }}>
               <InfoLabel>{`Últimos ${clientesOS.length} serviços feitos:`}</InfoLabel>
-              {clientesOS.map((os: any) => (
-                <>
+              {clientesOS.map((os) => (
+                <div key={os.id}>
                   <hr style={{ margin: "10px 0" }}></hr>
                   <Link to={`/ordens-de-serviço/${os.id}`}>
                     <InfoValue style={{ fontSize: "12px" }}>{`ID da OS: ${os.id}, Data do serviço: ${formatDate(os.dataServico)}, Motor: ${os.motor}, Valor: R$${os.valorServico}`}</InfoValue>
                   </Link>
                   <hr style={{ margin: "10px 0" }}></hr>
-                </>
+                </div>
               ))}
             </InfoCard>
             

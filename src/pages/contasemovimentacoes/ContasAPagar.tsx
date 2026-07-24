@@ -4,20 +4,19 @@ import { MoneyText } from "../financeiro/FinanceListPageStyled";
 import { formatCurrency, formatDate } from "../financeiro/formatters";
 import { useDeleteContasPagar, useGetContasPagar } from "../financeiro/useContasPagar";
 import { CreateContaPagarModal } from "../../components/createFinanceForms/CreateContaPagarModal";
+import type { ContaPagar } from "../../models/financeiro";
 
 export function ContasAPagar() {
   const { data } = useGetContasPagar();
   const { mutate: deleteContaPagar } = useDeleteContasPagar();
 
-  console.log(data)
-
   const [ openModal, setOpenModal ] = useState(false);
-  const [financaSelecionada, setFinancaSelecionada] = useState<any>(null);
+  const [financaSelecionada, setFinancaSelecionada] = useState<ContaPagar | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("");
 
   const filteredData = useMemo(() => {
-    return data?.filter((item: any) => {
+    return data.filter((item) => {
       const fornecedor = item.fornecedor?.toLowerCase() || "";
       const descricao = item.descricao?.toLowerCase() || "";
       const searchTerm = search.toLowerCase();
@@ -39,12 +38,12 @@ export function ContasAPagar() {
     setOpenModal(true);
   }
 
-  function handleEdit(item: any) {
+  function handleEdit(item: ContaPagar) {
     setFinancaSelecionada(item);
     setOpenModal(true);
   }
 
-  function handleDelete(item: any) {
+  function handleDelete(item: ContaPagar) {
     const confirmDelete = window.confirm(
       `Tem certeza que deseja excluir o registro?`
     );
@@ -54,7 +53,7 @@ export function ContasAPagar() {
     deleteContaPagar(item.id);
   }
 
-  function handleStatus(item: any) {
+  function handleStatus(item: ContaPagar) {
     const valorRecebido = Number(item?.valor_parcial_pago || 0)
     const valorTotal = Number(item?.valor || 0)
 
@@ -62,7 +61,7 @@ export function ContasAPagar() {
       return "PAGO"
     }
 
-    if (new Date(item?.dataPagamento) < new Date()) {
+    if (new Date(`${item.dataVencimento}T00:00:00`) < new Date()) {
       return "ATRASADO"
     }
 
@@ -97,31 +96,32 @@ export function ContasAPagar() {
         {
           key: "valorTotal",
           title: "Valor total",
-          render: (item: any) => <MoneyText>{formatCurrency(item.valor)}</MoneyText>,
+          render: (item) => <MoneyText>{formatCurrency(item.valor)}</MoneyText>,
         },
         {
           key: "valor_parcial_pago",
           title: "Pago",
-          render: (item: any) => <MoneyText>{formatCurrency(item.valor_parcial_pago)}</MoneyText>,
+          render: (item) => <MoneyText>{formatCurrency(item.valor_parcial_pago)}</MoneyText>,
         },
         {
           key: "valorRestante",
           title: "Valor restante",
-          render: (item: any) => <MoneyText>{formatCurrency(item.valor - item.valor_parcial_pago)}</MoneyText>,
+          render: (item) => <MoneyText>{formatCurrency(item.valor - item.valor_parcial_pago)}</MoneyText>,
         },
         {
           key: "dataVencimento",
           title: "Vencimento",
-          render: (item: any) => formatDate(item.dataVencimento),
+          render: (item) => formatDate(item.dataVencimento),
         },
         {
           key: "status",
           title: "Status",
-          render: (item: any) => (
-            <FinanceStatusBadge variant={item.status}>
-              {handleStatus(item)}
+          render: (item) => {
+            const status = handleStatus(item);
+            return <FinanceStatusBadge variant={status}>
+              {status}
             </FinanceStatusBadge>
-          ),
+          },
         },
       ]}
       onEdit={handleEdit}
@@ -129,11 +129,14 @@ export function ContasAPagar() {
       onCreate={handleCreate}
     />
 
-    <CreateContaPagarModal
-      isOpen={openModal}
-      onClose={() => setOpenModal(false)}
-      financaSelecionada={financaSelecionada}
-    />
+    {openModal && (
+      <CreateContaPagarModal
+        key={financaSelecionada?.id ?? "new"}
+        isOpen
+        onClose={() => setOpenModal(false)}
+        financaSelecionada={financaSelecionada}
+      />
+    )}
     </>
   );
 }

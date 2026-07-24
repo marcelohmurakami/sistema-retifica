@@ -24,9 +24,10 @@ import {
 } from "./ReciboPagamentoStyled";
 
 import { formatDate } from "../../utils/formatDate";
+import type { PagamentoRecebido } from "../../models/financeiro";
 
 type ReciboPagamentoProps = {
-  pagamento: any;
+  pagamento: PagamentoRecebido;
   onClose: () => void;
 };
 
@@ -41,7 +42,7 @@ function formatMetodoPagamento(metodo?: string) {
   return metodos[metodo || ""] || metodo || "-";
 }
 
-export function formatCurrency(value: number) {
+function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",

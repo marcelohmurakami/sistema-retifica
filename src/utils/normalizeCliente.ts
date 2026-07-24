@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { clienteSchema } from "../components/createForms/ClienteSchema";
+import type { EstoqueFormData } from "../models/estoque";
 
 type ClienteFormData = z.infer<typeof clienteSchema>;
 
@@ -31,13 +32,13 @@ export function makeUpdateClientePayload(
 
 export function makeUpdateEstoquePayload(
   id: number,
-  data: any,
+  data: EstoqueFormData,
 ) {
   return {
     id,
     nome: data.nome,
-    custo: data.custo,
-    valor: data.valor,
-    qtdEstoque: data.qtdEstoque,
+    custo: Number(data.custo),
+    valor: Number(data.valor),
+    qtdEstoque: Number(data.qtdEstoque),
   };
 }

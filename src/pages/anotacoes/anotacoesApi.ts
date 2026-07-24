@@ -1,10 +1,16 @@
 import { getEmpresaIdAtual } from "../../components/empresas/empresasApi";
 import { supabase } from "../../services/supabaseApi";
+import type {
+  AnotacaoDiaria,
+  AnotacaoDiariaInput,
+  AnotacaoGeral,
+  AnotacaoGeralInput,
+} from "../../models/anotacao";
 
 export async function getAnotacoesDiarias() {
     const empresaId = await getEmpresaIdAtual();
 
-    let { data: anotacoes_diarias, error } = await supabase
+    const { data: anotacoes_diarias, error } = await supabase
     .from('anotacoes_diarias')
     .select('*')
     .order('created_at', { ascending: false })
@@ -20,7 +26,7 @@ export async function getAnotacoesDiarias() {
 export async function getAnotacoesGerais() {
     const empresaId = await getEmpresaIdAtual();
 
-    let { data: anotacoes_gerais, error } = await supabase
+    const { data: anotacoes_gerais, error } = await supabase
     .from('anotacoes_gerais')
     .select('*')
     .order('created_at', { ascending: false })
@@ -33,7 +39,7 @@ export async function getAnotacoesGerais() {
     return anotacoes_gerais;
 }
     
-export async function createAnotacoesDiarias(data: any) { 
+export async function createAnotacoesDiarias(data: AnotacaoDiariaInput) {
     const empresaId = await getEmpresaIdAtual();
 
     const { data: newData, error } = await supabase
@@ -49,7 +55,7 @@ export async function createAnotacoesDiarias(data: any) {
     return newData;
 }
 
-export async function createAnotacoesGerais(data: any) { 
+export async function createAnotacoesGerais(data: AnotacaoGeralInput) {
     const empresaId = await getEmpresaIdAtual();
 
     const { data: newData, error } = await supabase
@@ -65,7 +71,7 @@ export async function createAnotacoesGerais(data: any) {
     return newData;
 }
 
-export async function updateAnotacoesDiarias(anotacao: any) {
+export async function updateAnotacoesDiarias(anotacao: AnotacaoDiariaInput & Pick<AnotacaoDiaria, "id">) {
   const empresaId = await getEmpresaIdAtual();
   const { id, titulo, data, prioridade } = anotacao;
 
@@ -105,7 +111,7 @@ export async function updateStatusAnotacaoDiaria({
   }
 }
 
-export async function updateAnotacoesGerais(anotacao: any) {
+export async function updateAnotacoesGerais(anotacao: AnotacaoGeralInput & Pick<AnotacaoGeral, "id">) {
     const { id, titulo, descricao, cliente } = anotacao;
     const empresaId = await getEmpresaIdAtual();
 

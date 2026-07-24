@@ -1,5 +1,6 @@
 import styled from "styled-components";
 
+// Controles compartilhados pelos formulários do módulo financeiro.
 export const Form = styled.form`
   display: flex;
   flex-direction: column;
@@ -21,10 +22,10 @@ export const Label = styled.label`
 
 export const Input = styled.input`
   width: 100%;
-  height: 44px;
+  height: 48px;
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radius.md};
-  background: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   padding: 0 ${({ theme }) => theme.spacing[4]};
   color: ${({ theme }) => theme.colors.textPrimary};
   font-family: ${({ theme }) => theme.typography.fontFamily};
@@ -33,21 +34,21 @@ export const Input = styled.input`
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &::placeholder {
-    color: ${({ theme }) => theme.colors.textSecondary};
+    color: ${({ theme }) => theme.colors.textMuted};
   }
 
   &:focus {
     border-color: ${({ theme }) => theme.colors.accent};
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+    box-shadow: 0 0 0 4px color-mix(in srgb, ${({ theme }) => theme.colors.accent} 12%, transparent);
   }
 `;
 
 export const Select = styled.select`
   width: 100%;
-  height: 44px;
+  height: 48px;
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radius.md};
-  background: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   padding: 0 ${({ theme }) => theme.spacing[4]};
   color: ${({ theme }) => theme.colors.textPrimary};
   font-family: ${({ theme }) => theme.typography.fontFamily};
@@ -58,7 +59,7 @@ export const Select = styled.select`
 
   &:focus {
     border-color: ${({ theme }) => theme.colors.accent};
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+    box-shadow: 0 0 0 4px color-mix(in srgb, ${({ theme }) => theme.colors.accent} 12%, transparent);
   }
 `;
 
@@ -71,7 +72,8 @@ export const ErrorText = styled.span`
 
 export const CancelButton = styled.button`
   border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.surface};
+  min-height: 44px;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   color: ${({ theme }) => theme.colors.textPrimary};
   border-radius: ${({ theme }) => theme.radius.md};
   padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[4]}`};
@@ -79,27 +81,31 @@ export const CancelButton = styled.button`
   font-size: ${({ theme }) => theme.typography.sizes.sm};
   font-weight: ${({ theme }) => theme.typography.weights.semibold};
   cursor: pointer;
-  transition: 0.2s ease;
+  transition: background 0.18s ease, transform 0.18s ease;
 
   &:hover {
     background: ${({ theme }) => theme.colors.background};
+    transform: translateY(-1px);
   }
 `;
 
 export const SubmitButton = styled.button`
   border: none;
-  background: ${({ theme }) => theme.colors.accent};
-  color: ${({ theme }) => theme.colors.surface};
+  min-height: 44px;
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.accent}, ${({ theme }) => theme.colors.accentDark});
+  color: #fff;
   border-radius: ${({ theme }) => theme.radius.md};
   padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[4]}`};
   font-family: ${({ theme }) => theme.typography.fontFamily};
   font-size: ${({ theme }) => theme.typography.sizes.sm};
   font-weight: ${({ theme }) => theme.typography.weights.semibold};
   cursor: pointer;
-  transition: 0.2s ease;
+  box-shadow: 0 9px 20px rgba(217, 76, 19, 0.18);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.accentDark};
+    transform: translateY(-1px);
+    box-shadow: 0 12px 25px rgba(217, 76, 19, 0.26);
   }
 
   &:disabled {

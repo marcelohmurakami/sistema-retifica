@@ -1,45 +1,48 @@
 import { Toaster } from "react-hot-toast";
+import { useTheme } from "styled-components";
 
 export function AppToaster() {
+  const theme = useTheme();
+
   return (
     <Toaster
-      position="top-center"
-      gutter={12}
+      position="top-right"
+      gutter={10}
       containerStyle={{
-        top: 20,
-        right: 20,
+        top: 18,
+        right: 18,
       }}
       toastOptions={{
         duration: 4000,
         style: {
-          backdropFilter: "blur(10px)",
-          background: "rgba(30,30,30,0.85)",
-          color: "#fff",
-          borderRadius: "12px",
-          padding: "14px 16px",
-          fontSize: "14px",
-          border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow:
-            "0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
+          backdropFilter: "blur(16px)",
+          background: theme.colors.surfaceElevated,
+          color: theme.colors.textPrimary,
+          borderRadius: "14px",
+          padding: "13px 15px",
+          fontSize: "13px",
+          fontWeight: 600,
+          border: `1px solid ${theme.colors.border}`,
+          boxShadow: theme.shadow.lg,
         },
 
         success: {
           iconTheme: {
-            primary: "#22c55e",
+            primary: theme.colors.success,
             secondary: "#fff",
           },
           style: {
-            borderLeft: "4px solid #22c55e",
+            borderLeft: `4px solid ${theme.colors.success}`,
           },
         },
 
         error: {
           iconTheme: {
-            primary: "#ef4444",
+            primary: theme.colors.error,
             secondary: "#fff",
           },
           style: {
-            borderLeft: "4px solid #ef4444",
+            borderLeft: `4px solid ${theme.colors.error}`,
           },
         },
       }}

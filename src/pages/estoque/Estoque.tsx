@@ -2,16 +2,16 @@ import { MainContent } from "../../components/mainContent/MainContent";
 import { ClientesHeader, ClientesInfos, ClientesStyled, ClientesTable, HeaderItem, SelectStyled } from "./EstoqueStyled";
 import { AddBtn } from "../../components/buttons/AddBtn";
 import { useState } from "react";
-import { CreateClienteModal } from "../../components/createForms/CreateClienteModal";
-import type { ClienteType } from "../../models/cliente"
+import { AppModal } from "../../components/modal/AppModal";
 import { LoadingContainer } from "../../components/spinner/LoadingContainer";
-import type { OsType } from "../../models/os";
 import { FooterInfo, OSTableFooter, PaginationButton, PaginationControls, SearchBox, SearchIcon, SearchInput, SearchWrapper } from "../ordensDeServico/OsStyled";
 import { PAGE_SIZE } from "../../utils/pageSize";
 import { useGetEstoqueWithPagination } from "./useEstoque";
 import { EstoqueRow } from "../../components/estoque/EstoqueRow";
 import { CreateEstoque } from "../../components/createForms/CreateEstoque";
 import { useEmpresaAtual } from "../../components/empresas/useEmpresas";
+import type { EstoqueItem } from "../../models/estoque";
+import { FaSearch } from "react-icons/fa";
 
 export function Estoque () {
     const { data: user } = useEmpresaAtual();
@@ -22,14 +22,18 @@ export function Estoque () {
     const [ searchInput, setSearchInput ] = useState('');
     const [ searchTerm, setSearchTerms ] = useState('');
 
-    let { estoque, isLoadingEstoque, count } = useGetEstoqueWithPagination(sortBy, page, searchInput);
+    const { estoque = [], isLoadingEstoque, count = 0 } = useGetEstoqueWithPagination(sortBy, page, searchInput);
 
     const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
-    const [clienteSelecionado, setClienteSelecionado] = useState<ClienteType | OsType | null>(null);
+    const [clienteSelecionado, setClienteSelecionado] = useState<EstoqueItem | null>(null);
     const [isSortByOpen] = useState<boolean>(true)
 
     const numberOfPages = Math?.ceil(count / PAGE_SIZE);
-    const paginas = Array.from({ length: numberOfPages }, (_, i) => i + 1);
+    const inicioPaginas = Math.max(1, Math.min(page - 4, numberOfPages - 9));
+    const paginas = Array.from(
+      { length: Math.min(10, numberOfPages) },
+      (_, i) => inicioPaginas + i,
+    );
     
     if (isLoadingEstoque) return <LoadingContainer />
 
@@ -37,7 +41,7 @@ export function Estoque () {
         <MainContent>
             <SearchWrapper>
                 <SearchBox>
-                    <SearchIcon>🔎</SearchIcon>
+                    <SearchIcon><FaSearch /></SearchIcon>
                     <SearchInput
                         type="text"
                         placeholder="Buscar por produto..."
@@ -53,11 +57,11 @@ export function Estoque () {
                 </SearchBox>
             </SearchWrapper>
             <ClientesStyled>
-                <ClientesInfos>Todos os produtos</ClientesInfos>
-                <ClientesInfos>Ordernar por: {isSortByOpen && <SelectStyled value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                <ClientesInfos>Produtos em estoque</ClientesInfos>
+                <ClientesInfos>Ordenar por {isSortByOpen && <SelectStyled value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                     <option value="id">ID</option>
-                    <option value="cliente-asc">Nome (A-Z)</option>
-                    <option value="cliente-desc">Nome (Z-A)</option>
+                    <option value="nome-asc">Nome (A-Z)</option>
+                    <option value="nome-desc">Nome (Z-A)</option>
                 </SelectStyled>}</ClientesInfos>
             </ClientesStyled>
 
@@ -71,33 +75,34 @@ export function Estoque () {
                     <HeaderItem>Situação</HeaderItem>
                 </ClientesHeader>
 
-            {!isLoadingEstoque && estoque?.map((cliente: any) => {
+            {!isLoadingEstoque && estoque.map((cliente) => {
                 return (
-                    <EstoqueRow cliente={cliente} setIsCreateOpen={setIsCreateOpen} setClienteSelecionado={setClienteSelecionado} isAdmin={isAdmin} />
+                    <EstoqueRow key={cliente.id} cliente={cliente} setIsCreateOpen={setIsCreateOpen} setClienteSelecionado={setClienteSelecionado} isAdmin={isAdmin} />
                 )
             })}
 
             <OSTableFooter>
                 <FooterInfo>
-                {`Mostrando ${PAGE_SIZE * page - 9}–${PAGE_SIZE * page <= count ? PAGE_SIZE * page : count} de ${count} ordens de serviço`}
+                {`Mostrando ${count === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}–${Math.min(PAGE_SIZE * page, count)} de ${count} produtos`}
                 </FooterInfo>
 
                 <PaginationControls>
                 <PaginationButton onClick={() => setPage(page - 1)} disabled={page === 1}>Anterior</PaginationButton>
                 {paginas.map((pagina) => (
-                    <PaginationButton value={pagina} onClick={() => setPage(pagina)} $active={pagina === page}>
+                    <PaginationButton key={pagina} value={pagina} onClick={() => setPage(pagina)} $active={pagina === page}>
                         {pagina}
                     </PaginationButton>
                 ))}
-                <PaginationButton onClick={() => setPage(page + 1)} disabled={page === numberOfPages}>Próxima</PaginationButton>
+                <PaginationButton onClick={() => setPage(page + 1)} disabled={page >= numberOfPages}>Próxima</PaginationButton>
                 </PaginationControls>
             </OSTableFooter>
             </ClientesTable>
 
             {isAdmin && <AddBtn setIsCreateOpen={setIsCreateOpen} novo={"Cadastrar novo produto"} />}
 
-            <CreateClienteModal
-                open={isCreateOpen}
+            {isCreateOpen && (
+              <AppModal
+                open
                 onClose={() => {
                     setIsCreateOpen(false);
                     setClienteSelecionado(null);
@@ -107,7 +112,8 @@ export function Estoque () {
                     setIsCreateOpen={setIsCreateOpen}
                     clienteParaEditar={clienteSelecionado}
                 />
-            </CreateClienteModal>
+              </AppModal>
+            )}
         </MainContent>
     )
 }

@@ -2,12 +2,12 @@ import { useState } from "react";
 import type { FormEvent } from 'react';
 import { Navigate, useNavigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
-import logo from '../../assets/logoLogin.svg';
 import {
   LoginPage,
   BrandSection,
   BrandOverlay,
   BrandContent,
+  BrandBadge,
   BrandTitle,
   BrandHighlight,
   BrandDescription,
@@ -76,7 +76,8 @@ export function Login() {
       <BrandSection>
         <BrandOverlay />
         <BrandContent>
-          <LogoStyled src={logo} alt="Logo da retífica"></LogoStyled>
+          <LogoStyled src="/images/logoPng512.png" alt="Logo da retífica" />
+          <BrandBadge>GESTÃO INDUSTRIAL DE ALTO NÍVEL</BrandBadge>
 
           <BrandTitle>
             Gestão mais rápida,

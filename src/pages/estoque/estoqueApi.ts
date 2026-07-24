@@ -1,19 +1,24 @@
 import { getEmpresaIdAtual } from "../../components/empresas/empresasApi";
 import { supabase } from "../../services/supabaseApi";
 import { PAGE_SIZE } from "../../utils/pageSize";
+import type { EstoqueFormData, EstoqueItem, EstoqueUpdate } from "../../models/estoque";
+import { getPaginationRange, parseSort } from "../../utils/queryPagination";
+import { sortByName } from "../../utils/sortByName";
+
+const ALLOWED_SORT_FIELDS = new Set(["id", "nome", "custo", "valor", "qtdEstoque"]);
 
 export async function getEstoque(sortByString: string, page: number, searchInput: string = "") {
   const empresaId = await getEmpresaIdAtual();
-  const sortBy = sortByString.split('-')[0];
-  const direction = sortByString.split('-')[1] === "asc" || sortBy === 'id' ? true : false;
-
-  const from = Math.max((page - 1) * PAGE_SIZE, 0);
-  const to = from + PAGE_SIZE - 1;
+  const { field: sortBy, ascending } = parseSort(
+    sortByString,
+    ALLOWED_SORT_FIELDS,
+  );
+  const { from, to } = getPaginationRange(page, PAGE_SIZE);
 
   let query = supabase
     .from("Estoque")
     .select("*", { count: "exact" })
-    .order(sortBy, {ascending: direction})
+    .order(sortBy, { ascending })
     .eq("empresa_id", empresaId);
 
   if (searchInput.trim()) {
@@ -25,7 +30,7 @@ export async function getEstoque(sortByString: string, page: number, searchInput
 
   const { data, count, error } = await query.range(from, to)
 
-  if (error) throw new Error("Não foi possível carregar os dados dos clientes.");
+  if (error) throw new Error("Não foi possível carregar os produtos do estoque.");
 
   return {
     data: data ?? [],
@@ -33,17 +38,18 @@ export async function getEstoque(sortByString: string, page: number, searchInput
   };
 }
 
-export async function getEstoqueWithoutPage() {
+export async function getEstoqueWithoutPage(): Promise<EstoqueItem[]> {
   const empresaId = await getEmpresaIdAtual();
 
-  let { data, error } = await supabase
-  .from('Estoque')
-  .select('*')
-  .eq("empresa_id", empresaId)
+  const { data, error } = await supabase
+    .from("Estoque")
+    .select("*")
+    .eq("empresa_id", empresaId)
+    .order("nome", { ascending: true, nullsFirst: false });
 
-  if (error) throw new Error("Não foi possível carregar os dados do cliente.");
+  if (error) throw new Error("Não foi possível carregar os produtos do estoque.");
 
-  return data;
+  return sortByName(data ?? [], (produto) => produto.nome);
 }
 
 export async function deleteEstoque(id: number) {
@@ -55,27 +61,30 @@ export async function deleteEstoque(id: number) {
     .eq('id', id)
     .eq('empresa_id', empresaId)
 
-  if (error) throw new Error("Não foi possível excluir o cadastro do cliente.");
+  if (error) throw new Error("Não foi possível excluir o produto.");
 
   return data;
 }
 
-export async function insertEstoque(estoque: any) {
+export async function insertEstoque(estoque: EstoqueFormData) {
   const empresaId = await getEmpresaIdAtual();
   const { data, error } = await supabase
   .from('Estoque')
   .insert({
     ...estoque,
+    custo: Number(estoque.custo),
+    valor: Number(estoque.valor),
+    qtdEstoque: Number(estoque.qtdEstoque),
     empresa_id: empresaId,
   })
   .select()
 
-  if (error) throw new Error ("Não foi possível editar os dados do cliente!");
+  if (error) throw new Error ("Não foi possível cadastrar o produto.");
 
   return data;
 }
 
-export async function updateEstoque(estoque: any) {
+export async function updateEstoque(estoque: EstoqueUpdate) {
   const empresaId = await getEmpresaIdAtual();
   const { id, ...estoqueData } = estoque;
 
@@ -87,7 +96,7 @@ export async function updateEstoque(estoque: any) {
   .select()
   .single()
 
-  if (error) throw new Error ("Não foi possível editar os dados do cliente!");
+  if (error) throw new Error ("Não foi possível editar o produto.");
 
   return data;
 }

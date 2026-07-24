@@ -32,7 +32,7 @@ export const HeaderLeft = styled.div`
   justify-content: flex-start;
   align-items: flex-start;
 
-  padding: 1.5rem 0rem 0 6rem;
+  padding: 15px 0 0 60px;
 `
 
 export const HeaderRight = styled.div`
@@ -55,13 +55,13 @@ export const LogoBox = styled.div`
 `
 
 export const CompanyInfo = styled.p`
-  margin: 0 1.5rem;
+  margin: 0 15px;
   font-size: 12.5px;
   font-weight: bold;
 `
 
 export const CompanySocial = styled.p`
-  margin: 0px 1rem;
+  margin: 0 10px;
   font-size: 12.5px;
   font-weight: 700;
 `
@@ -89,20 +89,20 @@ export const FieldRow = styled.div`
   gap: 6px;
   margin-bottom: 6px;
   align-items: baseline;
-  font-size: 1.1rem;
+  font-size: 11px;
 `
 
 export const FieldLabel = styled.span`
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: 12px;
 `
 
 export const FieldValue = styled.span`
   border-bottom: 1px dotted #555;
   flex: 1;
   min-height: 16px;
-  font-size: 1.2rem;
-  margin-left: .6rem;
+  font-size: 12px;
+  margin-left: 6px;
 `
 
 export const MotorSection = styled.div`
@@ -147,7 +147,7 @@ export const ItemRow = styled.div`
   justify-content: space-between;
   gap: 4px;
   margin-bottom: 3px;
-  font-size: 1.1rem;
+  font-size: 11px;
 `
 
 export const TotalBox = styled.div`
@@ -163,7 +163,7 @@ export const ObservacoesBox = styled.div`
   min-height: 100px;
   border-bottom: 1px solid #000;
   padding: 10px 0;
-  font-size: 1.1rem;
+  font-size: 11px;
   font-weight: bold;
 
   p {

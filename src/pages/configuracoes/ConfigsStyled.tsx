@@ -3,6 +3,8 @@ import styled, { css } from "styled-components";
 /* LAYOUT */
 
 export const PageContainer = styled.div`
+  width: min(100%, ${({ theme }) => theme.layout.containerMax});
+  margin: 0 auto;
   min-height: 100%;
   padding: clamp(1rem, 3vw, 2rem);
   background: ${({ theme }) => theme.colors.background};
@@ -14,11 +16,11 @@ export const PageContainer = styled.div`
 `;
 
 export const Header = styled.div`
-  max-width: 1180px;
+  max-width: none;
   margin: 0 auto 1rem;
   padding: clamp(1.1rem, 3vw, 1.6rem);
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 1rem;
+  border-radius: ${({ theme }) => theme.radius.lg};
   background: ${({ theme }) => theme.colors.surface};
   box-shadow: ${({ theme }) => theme.shadow.sm};
 
@@ -42,7 +44,7 @@ export const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
-  max-width: 1180px;
+  max-width: none;
   margin: 0 auto;
 
   @media (max-width: 1000px) {
@@ -60,9 +62,16 @@ export const Grid = styled.div`
 export const SectionCard = styled.div`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 1rem;
+  border-radius: 18px;
   padding: 1.15rem;
   box-shadow: ${({ theme }) => theme.shadow.sm};
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, ${({ theme }) => theme.colors.accent} 22%, ${({ theme }) => theme.colors.border});
+    box-shadow: ${({ theme }) => theme.shadow.md};
+    transform: translateY(-2px);
+  }
 
   @media (max-width: 520px) {
     border-radius: 0.85rem;
@@ -119,7 +128,7 @@ export const Input = styled.input`
 
   &:focus {
     border-color: ${({ theme }) => theme.colors.accent};
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+    box-shadow: 0 0 0 4px color-mix(in srgb, ${({ theme }) => theme.colors.accent} 12%, transparent);
   }
 
   @media (max-width: 520px) {
@@ -133,7 +142,7 @@ export const Button = styled.button`
   min-height: 44px;
   border: none;
   border-radius: 0.8rem;
-  background: ${({ theme }) => theme.colors.accent};
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.accent}, ${({ theme }) => theme.colors.accentDark});
   color: white;
   font-weight: bold;
   cursor: pointer;

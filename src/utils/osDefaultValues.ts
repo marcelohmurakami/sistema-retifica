@@ -1,12 +1,13 @@
 import { formatDateValue } from "./formatDate";
+import type { OSCreateInput, OSEditInput } from "../models/os";
 
 const hoje = new Date();
 
 const vencimento = new Date();
 vencimento.setMonth(vencimento.getMonth() + 1);
 
-export const defaultValues: any = {
-      idCliente: null,
+export const defaultValues: OSCreateInput = {
+      idCliente: 0,
       dataServico: formatDateValue(hoje),
       dataVencimento: formatDateValue(vencimento),
       formaPagamento: "Carteira",
@@ -19,7 +20,7 @@ export const defaultValues: any = {
 }
 
 
-export function editDefaultValues(osSelecionada: any) {
+export function editDefaultValues(osSelecionada: OSEditInput): OSCreateInput {
       const values = {
             idCliente: osSelecionada.idCliente,
             dataServico: osSelecionada?.dataServico || formatDateValue(hoje),
@@ -30,7 +31,7 @@ export function editDefaultValues(osSelecionada: any) {
             servicosRealizados: osSelecionada.servicosRealizados ?? "",
             pecasTrocadas: osSelecionada.pecasTrocadas ?? "",
             obs: osSelecionada.obs ?? "Sem observações",
-            valorServico: Number(osSelecionada.valorServico) ?? 0,
+            valorServico: Number(osSelecionada.valorServico) || 0,
       }
 
       return values;

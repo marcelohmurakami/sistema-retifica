@@ -7,18 +7,18 @@ export const ModalOverlay = styled.div`
   display: grid;
   place-items: center;
   padding: clamp(12px, 4vw, 24px);
-  background: color-mix(in srgb, ${({ theme }) => theme.colors.background} 74%, transparent);
-  backdrop-filter: blur(6px);
+  background: rgba(7, 10, 14, 0.62);
+  backdrop-filter: blur(7px);
 `;
 
 export const ModalCard = styled.div`
   width: min(620px, 96vw);
   max-height: 90vh;
   overflow: auto;
-  background: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   border-radius: 18px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  box-shadow: ${({ theme }) => theme.shadow.md};
+  box-shadow: ${({ theme }) => theme.shadow.lg};
 `;
 
 export const ModalHeader = styled.div`
@@ -209,12 +209,13 @@ export const CancelButton = styled.button`
 
 export const SubmitButton = styled.button`
   border: none;
-  background: ${({ theme }) => theme.colors.accent};
-  color: ${({ theme }) => theme.colors.surface};
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.accent}, ${({ theme }) => theme.colors.accentDark});
+  color: #fff;
   border-radius: 12px;
   padding: 10px 18px;
   font-weight: 800;
   cursor: pointer;
+  box-shadow: 0 9px 20px rgba(217, 76, 19, 0.2);
 
   &:hover {
     background: ${({ theme }) => theme.colors.accentDark};

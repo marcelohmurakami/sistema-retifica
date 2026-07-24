@@ -19,6 +19,7 @@ export function useUpdateCliente(
       queryClient.invalidateQueries({
         queryKey: ["cliente"],
       });
+      queryClient.invalidateQueries({ queryKey: ["clientes"] });
 
       reset();
       setIsCreateOpen(false);

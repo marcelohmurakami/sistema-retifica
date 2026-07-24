@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   Form,
   FieldGroup,
@@ -8,14 +8,15 @@ import {
   ErrorText,
   CancelButton,
   SubmitButton,
-} from "./ContaReceberModalStyled";
+} from "../ui/FinanceFormStyled";
 import { BaseFinanceModal } from "./BaseFinanceModal";
 import { useAccountsReceivableForm } from "./useHooksFinanceForms";
+import type { ContaReceber, FinanceStatus } from "../../models/financeiro";
 
 export type CreateContaReceberModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  financaSelecionada?: any;
+  financaSelecionada?: ContaReceber | null;
 };
 
 export function CreateContaReceberModal({
@@ -24,28 +25,17 @@ export function CreateContaReceberModal({
   financaSelecionada,
 }: CreateContaReceberModalProps) {
   const hasId = Boolean(financaSelecionada?.id);
-  const modalRef = useRef<HTMLDivElement>(null);
 
-  const [descricao, setDescricao] = useState("");
-  const [valor, setValor] = useState("");
-  const [valorRecebido, setValorRecebido] = useState("");
-  const [dataPagamento, setDataPagamento] = useState("");
-  const [status, setStatus] = useState("pendente");
-  const [osId, setOsId] = useState("");
+  const [descricao, setDescricao] = useState(financaSelecionada?.descricao ?? "");
+  const [valor, setValor] = useState(financaSelecionada ? String(financaSelecionada.valor) : "");
+  const [valorRecebido, setValorRecebido] = useState(financaSelecionada ? String(financaSelecionada.valorRecebido) : "");
+  const [dataPagamento, setDataPagamento] = useState(financaSelecionada?.dataPagamento ?? "");
+  const [status, setStatus] = useState<FinanceStatus>(financaSelecionada?.status ?? "pendente");
+  const [osId, setOsId] = useState(financaSelecionada ? String(financaSelecionada.osId) : "");
 
   const { mutate, isPending, error } = useAccountsReceivableForm();
 
-  function resetForm() {
-    setDescricao("");
-    setValor("");
-    setValorRecebido("");
-    setDataPagamento("");
-    setStatus("pendente");
-    setOsId("");
-  }
-
   function handleClose() {
-    resetForm();
     onClose();
   }
 
@@ -56,6 +46,7 @@ export function CreateContaReceberModal({
     if (!valor || Number(valor) <= 0) return;
     if (!dataPagamento) return;
     if (!osId || Number(osId) <= 0) return;
+    if (Number(valorRecebido) < 0 || Number(valorRecebido) > Number(valor)) return;
 
     mutate(
       {
@@ -77,59 +68,10 @@ export function CreateContaReceberModal({
     );
   }
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        handleClose();
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (financaSelecionada && isOpen) {
-      setDescricao(financaSelecionada.descricao || "");
-      setValor(
-        financaSelecionada.valor !== undefined
-          ? String(financaSelecionada.valor)
-          : ""
-      );
-      setValorRecebido(
-        financaSelecionada.valorRecebido !== undefined
-          ? String(financaSelecionada.valorRecebido)
-          : ""
-      );
-      setDataPagamento(financaSelecionada.dataPagamento || "");
-      setStatus(financaSelecionada.status || "pendente");
-      setOsId(
-        financaSelecionada.osId !== undefined
-          ? String(financaSelecionada.osId)
-          : ""
-      );
-    } else if (isOpen) {
-      resetForm();
-    }
-  }, [financaSelecionada, isOpen]);
-
-  function handleOverlayClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      handleClose();
-    }
-  }
-
   if (!isOpen) return null;
 
   return (
-    <div onMouseDown={handleOverlayClick}>
-      <div ref={modalRef}>
-        <BaseFinanceModal
+    <BaseFinanceModal
           isOpen={isOpen}
           title={hasId ? "Editar conta a receber" : "Nova conta a receber"}
           onClose={handleClose}
@@ -178,11 +120,13 @@ export function CreateContaReceberModal({
             </FieldGroup>
 
             <FieldGroup>
-              <Label htmlFor="valor">Valor parcial recebido:</Label>
+              <Label htmlFor="valorRecebido">Valor parcial recebido:</Label>
               <Input
                 id="valorRecebido"
                 type="number"
                 step="0.01"
+                min="0"
+                max={valor || undefined}
                 placeholder="0,00"
                 value={valorRecebido}
                 onChange={(e) => setValorRecebido(e.target.value)}
@@ -190,13 +134,14 @@ export function CreateContaReceberModal({
             </FieldGroup>
 
             <FieldGroup>
-              <Label htmlFor="valor">Valor restante a ser recebido:</Label>
+              <Label htmlFor="valorRestante">Valor restante a ser recebido:</Label>
               <Input
                 id="valorRestante"
                 type="number"
                 step="0.01"
                 placeholder="0,00"
-                value={Number(valor) - Number(valorRecebido)}
+                value={Math.max(Number(valor) - Number(valorRecebido), 0)}
+                readOnly
               />
             </FieldGroup>
 
@@ -215,7 +160,7 @@ export function CreateContaReceberModal({
               <Select
                 id="status"
                 value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                onChange={(e) => setStatus(e.target.value as FinanceStatus)}
               >
                 <option value="pendente">Pendente</option>
                 <option value="parcial">Parcial</option>
@@ -237,8 +182,6 @@ export function CreateContaReceberModal({
 
             {error && <ErrorText>{error.message}</ErrorText>}
           </Form>
-        </BaseFinanceModal>
-      </div>
-    </div>
+    </BaseFinanceModal>
   );
 }

@@ -64,17 +64,16 @@ import { useGetPagamentoQuitado } from "./usePagamentoQuitado";
 import { useGetPagamentoRecebido } from "./usePagamentoRecebido";
 import { useNavigate } from "react-router";
 import { formatDate } from "../../utils/formatDate";
-
-type StatusFinanceiro = "pago" | "pendente" | "atrasado";
+import type { FinanceStatus } from "../../models/financeiro";
 
 function formatCurrency(value: number) {
-  return value?.toLocaleString("pt-BR", {
+  return Number(value || 0).toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",
   });
 }
 
-function getStatusLabel(status: StatusFinanceiro) {
+function getStatusLabel(status: FinanceStatus) {
   switch (status) {
     case "pago":
       return "Pago";
@@ -100,41 +99,53 @@ export function Financeiro() {
     return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
   })
 
+  function isSameMonth(date?: string | null) {
+    if (!date) return false;
+
+    return date.slice(0, 7) === mesSelecionado;
+  }
+
   const totalReceber =
     contasReceber
-      ?.filter((item: any) => item.status !== "pago")
-      .filter((pagamento: any) =>
+      .filter((item) => item.status !== "pago")
+      .filter((pagamento) =>
         isSameMonth(pagamento?.dataPagamento)
       )
-      .reduce((acc: any, item: any) => acc + Number(item.valor || 0), 0) ?? 0;
+      .reduce(
+        (acc, item) => acc + Math.max(Number(item.valor || 0) - Number(item.valorRecebido || 0), 0),
+        0,
+      );
 
   const totalPagar =
     contasPagar
-      ?.filter((item: any) => item.status !== "pago")
-      .filter((item: any) =>
+      .filter((item) => item.status !== "pago")
+      .filter((item) =>
         isSameMonth(item.dataVencimento)
       )
-      .reduce((acc: any, item: any) => acc + Number(item.valor || 0), 0) ?? 0;
+      .reduce(
+        (acc, item) => acc + Math.max(Number(item.valor || 0) - Number(item.valor_parcial_pago || 0), 0),
+        0,
+      );
 
   const totalRecebidoMes =
     pagamentosRecebidos
-      ?.filter((item: any) =>
+      .filter((item) =>
         isSameMonth(item.dataRecebimento)
       )
-      .reduce((acc: any, item: any) => acc + Number(item.valor || 0), 0) ?? 0;
+      .reduce((acc, item) => acc + Number(item.valor || 0), 0);
 
   const totalSaidasMes =
     pagamentosQuitados
-      ?.filter((item: any ) =>
+      .filter((item) =>
         isSameMonth(item.dataPagamento)
       )
-      .reduce((acc: any, item: any) => acc + Number(item.valor || 0), 0) ?? 0;
+      .reduce((acc, item) => acc + Number(item.valor || 0), 0);
 
   const saldoMes = totalReceber - totalPagar;
   const saldoCaixaMes = totalRecebidoMes - totalSaidasMes;
 
   const contasAtrasadas =
-    contasPagar?.filter((conta: any) => {
+    contasPagar.filter((conta) => {
       if (!conta.dataVencimento) return false
       if (conta?.valor_parcial_pago >= conta?.valor) return false
 
@@ -145,10 +156,10 @@ export function Financeiro() {
       vencimento.setHours(0, 0, 0, 0)
 
       return hoje > vencimento
-    }).length ?? 0
+    }).length
 
   const contasReceberAtrasadas =
-    contasReceber?.filter((conta: any) => {
+    contasReceber.filter((conta) => {
       if (!conta.dataPagamento) return false
       if (conta?.valorRecebido >= conta?.valor) return false
 
@@ -159,13 +170,7 @@ export function Financeiro() {
       pagamento.setHours(0, 0, 0, 0)
 
       return hoje > pagamento
-    }).length ?? 0
-
-  function isSameMonth(date?: string | null) {
-    if (!date) return false;
-
-    return date.slice(0, 7) === mesSelecionado;
-  }
+    }).length
 
   return (
     <PageContainer>
@@ -240,7 +245,7 @@ export function Financeiro() {
           </CardIconWrapper>
           <CardContent>
             <CardLabel>Pendências críticas</CardLabel>
-            <CardValue>{contasAtrasadas?.length ?? 0}</CardValue>
+            <CardValue>{contasAtrasadas}</CardValue>
             <CardHelper>
               Contas atrasadas exigindo atenção imediata
             </CardHelper>
@@ -311,7 +316,7 @@ export function Financeiro() {
               <span>Despesas atrasadas:</span>
               <strong>
                 {
-                  contasAtrasadas?.length || 0
+                  contasAtrasadas
                 }
               </strong>
             </InfoItem>
@@ -344,7 +349,7 @@ export function Financeiro() {
           </SectionHeader>
 
           <ItemsList>
-            {contasReceber?.slice(0, 4)?.map((conta: any) => (
+            {contasReceber.slice(0, 4).map((conta) => (
               <FinanceItem key={conta.id}>
                 <FinanceItemMain>
                   <FinanceTitle>{conta.descricao}</FinanceTitle>
@@ -355,13 +360,13 @@ export function Financeiro() {
                     <Dot />
                     <span>
                       <FaCalendarAlt />
-                      {formatDate(conta?.OrdensServico?.dataVencimento)}
+                      {formatDate(conta.dataPagamento)}
                     </span>
                   </FinanceMeta>
                 </FinanceItemMain>
 
                 <FinanceItemAside>
-                  <FinanceValue>{`R$ ${conta?.OrdensServico?.valorServico?.toFixed(2) ?? "0,00"}`}</FinanceValue>
+                  <FinanceValue>{formatCurrency(conta.valor)}</FinanceValue>
                   <StatusBadge $status={conta.status}>
                     {getStatusLabel(conta.status)}
                   </StatusBadge>
@@ -389,7 +394,7 @@ export function Financeiro() {
           </SectionHeader>
 
           <ItemsList>
-            {contasPagar?.slice(0, 4)?.map((conta: any) => (
+            {contasPagar.slice(0, 4).map((conta) => (
               <FinanceItem key={conta.id}>
                 <FinanceItemMain>
                   <FinanceTitle>{conta.descricao}</FinanceTitle>
@@ -445,7 +450,7 @@ export function Financeiro() {
               </thead>
 
               <tbody>
-                {pagamentosQuitados?.slice(0, 4)?.map((item: any) => (
+                {pagamentosQuitados.slice(0, 4).map((item) => (
                   <tr key={item.id}>
                     <td>{item.descricao}</td>
                     <td>{item.formaPagamento ?? "-"}</td>
@@ -489,7 +494,7 @@ export function Financeiro() {
               </thead>
 
               <tbody>
-                {pagamentosRecebidos?.slice(0, 4)?.map((item: any) => (
+                {pagamentosRecebidos.slice(0, 4).map((item) => (
                   <tr key={item.id}>
                     <td>{item.descricao}</td>
                     <td>{item.metodoPag ?? "-"}</td>

@@ -8,23 +8,28 @@ import type { ClienteType } from "../../models/cliente";
 import { getOrcamentoById } from "./Orcamento";
 import { ImpressOrcamento } from "./impressOrcamento";
 import { toPng } from 'html-to-image';
+import type { OrcamentoType } from "../../models/orcamento";
+import { useAuth } from "../../contexts/AuthContext";
+import { queryKeys } from "../../services/queryKeys";
 
 export function OrcamentoPage() {
+  const { user } = useAuth()
   const { id } = useParams()
+  const orcamentoId = Number(id)
   const downloadRef = useRef<HTMLDivElement>(null)
 
-  const { data: orcamento, isLoading: isLoadingOrcamento } = useQuery<any>({
-    queryKey: ['Orcamento', id],
-    queryFn: () => getOrcamentoById(Number(id)),
-    enabled: !!id,
+  const { data: orcamento, isLoading: isLoadingOrcamento } = useQuery<OrcamentoType | null>({
+    queryKey: queryKeys.orcamentos.detail(user?.id, orcamentoId),
+    queryFn: () => getOrcamentoById(orcamentoId),
+    enabled: !!user?.id && !!orcamentoId,
   })
 
   const idCliente = orcamento?.idCliente
 
   const { data, isLoading, isError, error } = useQuery<ClienteType>({
-    queryKey: ['Cliente', idCliente],
-    queryFn: () => getCliente(idCliente),
-    enabled: !!idCliente,
+    queryKey: queryKeys.clientes.detail(user?.id, Number(idCliente)),
+    queryFn: () => getCliente(Number(idCliente)),
+    enabled: !!user?.id && !!idCliente,
   })
 
   async function handleDownloadOrcamento() {
@@ -44,7 +49,8 @@ export function OrcamentoPage() {
     link.click()
   }
 
-  function compartilharWhatsapp(orcamento: any) {
+  function compartilharWhatsapp(orcamento: OrcamentoType | null | undefined) {
+    if (!orcamento) return;
     const telefone = String(orcamento.Clientes?.telefone1 ?? "");
 
     if (!telefone) {

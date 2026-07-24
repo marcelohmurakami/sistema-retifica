@@ -1,86 +1,109 @@
 import styled from "styled-components";
 
-export const LogoStyled = styled.img`
-  display: block;
-  width: clamp(180px, 24vw, 300px);
-  max-width: 100%;
-  height: auto;
-  margin-bottom: ${({ theme }) => theme.spacing[6]};
-  object-fit: contain;
-`;
-
-export const LoginPage = styled.div`
+export const LoginPage = styled.main`
   min-height: 100vh;
   min-height: 100dvh;
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: minmax(0, 1.08fr) minmax(430px, 0.92fr);
   background: ${({ theme }) => theme.colors.background};
 
-  @media (max-width: 960px) {
+  @media (max-width: 980px) {
     grid-template-columns: 1fr;
   }
 `;
 
 export const BrandSection = styled.section`
   position: relative;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 0;
-  padding: ${({ theme }) => theme.spacing[10]};
-  background: linear-gradient(
-    135deg,
-    ${({ theme }) => theme.colors.primaryDark} 0%
-  );
   overflow: hidden;
+  padding: clamp(2rem, 6vw, 5.5rem);
+  background:
+    linear-gradient(118deg, rgba(242, 106, 46, 0.19), transparent 42%),
+    linear-gradient(145deg, #181d25 0%, #090c11 100%);
 
-  @media (max-width: 960px) {
-    display: none;
+  &::before {
+    content: "";
+    position: absolute;
+    width: 30rem;
+    height: 30rem;
+    right: -15rem;
+    bottom: -14rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+    box-shadow:
+      0 0 0 4rem rgba(255, 255, 255, 0.018),
+      0 0 0 8rem rgba(255, 255, 255, 0.012);
   }
 
-  @media (max-width: 1180px) {
-    padding: ${({ theme }) => theme.spacing[8]};
+  @media (max-width: 980px) {
+    display: none;
   }
 `;
 
 export const BrandOverlay = styled.div`
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at top left, rgba(249, 115, 22, 0.22), transparent 32%),
-    radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.06), transparent 28%);
+  opacity: 0.2;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.72) 1px, transparent 1px);
+  background-size: 23px 23px;
+  mask-image: linear-gradient(125deg, #000, transparent 48%);
 `;
 
 export const BrandContent = styled.div`
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 520px;
-  color: ${({ theme }) => theme.colors.surface};
+  max-width: 650px;
+  color: #fff;
+`;
+
+export const LogoStyled = styled.img`
+  display: block;
+  width: clamp(220px, 28vw, 330px);
+  height: auto;
+  margin: -3.5rem 0 -2.2rem -3rem;
+  object-fit: contain;
+  filter: invert(1) grayscale(1) brightness(2);
+  opacity: 0.96;
 `;
 
 export const BrandBadge = styled.div`
+  width: fit-content;
   display: inline-flex;
   align-items: center;
-  padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[4]}`};
-  margin-bottom: ${({ theme }) => theme.spacing[6]};
-
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  gap: 0.55rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: ${({ theme }) => theme.radius.pill};
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(10px);
 
-  font-size: ${({ theme }) => theme.typography.sizes.sm};
-  font-weight: ${({ theme }) => theme.typography.weights.semibold};
-  letter-spacing: 0.2px;
+  &::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: ${({ theme }) => theme.colors.accent};
+    box-shadow: 0 0 0 5px rgba(242, 106, 46, 0.14);
+  }
 `;
 
 export const BrandTitle = styled.h1`
-  margin: 0 0 ${({ theme }) => theme.spacing[4]} 0;
-  color: ${({ theme }) => theme.colors.surface};
-  font-size: clamp(2rem, 3.8vw, 3.4rem);
-  font-weight: ${({ theme }) => theme.typography.weights.bold};
-  line-height: 1.05;
+  max-width: 640px;
+  margin-bottom: 1.2rem;
+  color: #fff;
+  font-size: clamp(2.45rem, 5vw, 4.65rem);
+  font-weight: 760;
+  letter-spacing: -0.06em;
+  line-height: 0.98;
 `;
 
 export const BrandHighlight = styled.span`
@@ -88,231 +111,224 @@ export const BrandHighlight = styled.span`
 `;
 
 export const BrandDescription = styled.p`
-  margin: 0 0 ${({ theme }) => theme.spacing[8]} 0;
-  max-width: 460px;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: clamp(
-    ${({ theme }) => theme.typography.sizes.md},
-    1.35vw,
-    ${({ theme }) => theme.typography.sizes.lg}
-  );
-  line-height: ${({ theme }) => theme.typography.lineHeights.relaxed};
+  max-width: 530px;
+  margin-bottom: 2rem;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: clamp(0.9rem, 1.25vw, 1.02rem);
+  line-height: 1.65;
 `;
 
 export const BrandFeatures = styled.div`
+  max-width: 610px;
   display: grid;
-  gap: ${({ theme }) => theme.spacing[4]};
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
 `;
 
-export const FeatureCard = styled.div`
-  padding: ${({ theme }) => theme.spacing[4]};
-  border-radius: ${({ theme }) => theme.radius.lg};
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(8px);
+export const FeatureCard = styled.article`
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(12px);
 `;
 
 export const FeatureTitle = styled.h3`
-  margin: 0 0 ${({ theme }) => theme.spacing[2]} 0;
-  color: ${({ theme }) => theme.colors.surface};
-  font-size: ${({ theme }) => theme.typography.sizes.md};
-  font-weight: ${({ theme }) => theme.typography.weights.semibold};
+  margin-bottom: 0.35rem;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.82rem;
+  font-weight: 680;
 `;
 
 export const FeatureText = styled.p`
-  margin: 0;
-  color: rgba(255, 255, 255, 0.74);
-  font-size: ${({ theme }) => theme.typography.sizes.sm};
-  line-height: ${({ theme }) => theme.typography.lineHeights.relaxed};
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.72rem;
+  line-height: 1.5;
 `;
 
 export const FormSection = styled.section`
+  position: relative;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 0;
-  padding: ${({ theme }) => theme.spacing[8]};
-  background: ${({ theme }) => theme.colors.background};
+  padding: clamp(1.25rem, 5vw, 4rem);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(242, 106, 46, 0.08), transparent 22rem),
+    ${({ theme }) => theme.colors.background};
 
-  @media (max-width: 960px) {
+  @media (max-width: 980px) {
     min-height: 100vh;
     min-height: 100dvh;
-    padding: ${({ theme }) => theme.spacing[6]};
   }
 
   @media (max-width: 520px) {
     align-items: stretch;
-    padding: ${({ theme }) => theme.spacing[3]};
+    padding: 0;
   }
 `;
 
 export const LoginCard = styled.div`
   width: 100%;
   max-width: 460px;
-  background: ${({ theme }) => theme.colors.surface};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radius.lg};
-  box-shadow: ${({ theme }) => theme.shadow.md};
   overflow: hidden;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 26px;
+  background: ${({ theme }) => theme.colors.surface};
+  box-shadow: ${({ theme }) => theme.shadow.lg};
 
   @media (max-width: 520px) {
     max-width: none;
-    border-radius: ${({ theme }) => theme.radius.md};
+    min-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 `;
 
 export const LoginTopBar = styled.div`
-  height: 8px;
+  height: 5px;
   background: linear-gradient(
     90deg,
-    ${({ theme }) => theme.colors.primaryDark}
+    ${({ theme }) => theme.colors.accent},
+    ${({ theme }) => theme.colors.accentDark} 52%,
+    #2a303a 52%
   );
 `;
 
 export const LoginContent = styled.div`
-  padding: ${({ theme }) => theme.spacing[8]};
+  padding: clamp(1.5rem, 4vw, 2.65rem);
 
   @media (max-width: 520px) {
-    padding: ${({ theme }) => theme.spacing[5]};
-  }
-
-  @media (max-width: 360px) {
-    padding: ${({ theme }) => theme.spacing[4]};
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100dvh - 5px);
   }
 `;
 
 export const MobileBrand = styled.div`
   display: none;
 
-  @media (max-width: 960px) {
+  @media (max-width: 980px) {
     display: block;
-    margin-bottom: ${({ theme }) => theme.spacing[6]};
+    margin-bottom: 2.25rem;
   }
 `;
 
 export const MobileTitle = styled.h1`
-  margin: 0 0 ${({ theme }) => theme.spacing[2]} 0;
+  margin-bottom: 0.35rem;
   color: ${({ theme }) => theme.colors.primaryDark};
-  font-size: clamp(
-    ${({ theme }) => theme.typography.sizes.xl},
-    7vw,
-    ${({ theme }) => theme.typography.sizes["2xl"]}
-  );
-  font-weight: ${({ theme }) => theme.typography.weights.bold};
-  line-height: ${({ theme }) => theme.typography.lineHeights.tight};
+  font-size: 1.35rem;
+  font-weight: 760;
+  letter-spacing: -0.04em;
 `;
 
 export const MobileSubtitle = styled.p`
-  margin: 0;
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.typography.sizes.sm};
-  line-height: ${({ theme }) => theme.typography.lineHeights.relaxed};
+  font-size: 0.78rem;
+  line-height: 1.55;
 `;
 
 export const LoginHeader = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing[6]};
+  margin-bottom: 1.65rem;
 `;
 
 export const LoginTitle = styled.h2`
-  margin: 0 0 ${({ theme }) => theme.spacing[2]} 0;
+  margin-bottom: 0.4rem;
   color: ${({ theme }) => theme.colors.primaryDark};
-  font-size: clamp(
-    ${({ theme }) => theme.typography.sizes.xl},
-    7vw,
-    ${({ theme }) => theme.typography.sizes["2xl"]}
-  );
-  font-weight: ${({ theme }) => theme.typography.weights.bold};
-  line-height: ${({ theme }) => theme.typography.lineHeights.tight};
+  font-size: clamp(1.65rem, 5vw, 2.1rem);
+  font-weight: 760;
+  letter-spacing: -0.045em;
+  line-height: 1.1;
 `;
 
 export const LoginSubtitle = styled.p`
-  margin: 0;
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.typography.sizes.sm};
-  line-height: ${({ theme }) => theme.typography.lineHeights.relaxed};
+  font-size: 0.8rem;
+  line-height: 1.55;
 `;
 
 export const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing[4]};
+  gap: 1rem;
 `;
 
 export const FieldGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing[2]};
+  gap: 0.42rem;
 `;
 
 export const Label = styled.label`
   color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: ${({ theme }) => theme.typography.sizes.sm};
-  font-weight: ${({ theme }) => theme.typography.weights.semibold};
+  font-size: 0.76rem;
+  font-weight: 650;
 `;
 
 export const Input = styled.input`
   width: 100%;
-  height: 48px;
-  box-sizing: border-box;
-  padding: 0 ${({ theme }) => theme.spacing[4]};
-
+  height: 50px;
+  padding: 0 0.95rem;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radius.md};
-  background: ${({ theme }) => theme.colors.surface};
+  border-radius: 13px;
+  outline: 0;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   color: ${({ theme }) => theme.colors.textPrimary};
-
-  font-size: ${({ theme }) => theme.typography.sizes.md};
-  font-family: ${({ theme }) => theme.typography.fontFamily};
-
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  font-size: 0.86rem;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
 
   &::placeholder {
-    color: ${({ theme }) => theme.colors.textSecondary};
+    color: ${({ theme }) => theme.colors.textMuted};
+  }
+
+  &:hover {
+    border-color: color-mix(in srgb, ${({ theme }) => theme.colors.textSecondary} 45%, ${({ theme }) => theme.colors.border});
   }
 
   &:focus {
-    outline: none;
     border-color: ${({ theme }) => theme.colors.accent};
-    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.14);
-    background: ${({ theme }) => theme.colors.surface};
+    box-shadow: 0 0 0 4px color-mix(in srgb, ${({ theme }) => theme.colors.accent} 13%, transparent);
   }
 `;
 
 export const ErrorMessage = styled.p`
-  margin: 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid color-mix(in srgb, ${({ theme }) => theme.colors.error} 20%, transparent);
+  border-radius: 11px;
+  background: color-mix(in srgb, ${({ theme }) => theme.colors.error} 7%, transparent);
   color: ${({ theme }) => theme.colors.error};
-  font-size: ${({ theme }) => theme.typography.sizes.sm};
-  font-weight: ${({ theme }) => theme.typography.weights.medium};
+  font-size: 0.75rem;
+  font-weight: 580;
 `;
 
 export const SubmitButton = styled.button`
   width: 100%;
-  height: 50px;
   min-height: 50px;
-  margin-top: ${({ theme }) => theme.spacing[2]};
-
-  border: none;
-  border-radius: ${({ theme }) => theme.radius.md};
-
-  background: linear-gradient(
-    135deg,
-    ${({ theme }) => theme.colors.accent},
-    ${({ theme }) => theme.colors.accentDark}
-  );
-  color: ${({ theme }) => theme.colors.surface};
-
-  font-size: ${({ theme }) => theme.typography.sizes.md};
-  font-weight: ${({ theme }) => theme.typography.weights.semibold};
-  font-family: ${({ theme }) => theme.typography.fontFamily};
-
-  cursor: pointer;
-  box-shadow: ${({ theme }) => theme.shadow.sm};
-  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  margin-top: 0.3rem;
+  border: 0;
+  border-radius: 13px;
+  background:
+    linear-gradient(135deg, ${({ theme }) => theme.colors.accent}, ${({ theme }) => theme.colors.accentDark});
+  color: #fff;
+  font-size: 0.86rem;
+  font-weight: 700;
+  box-shadow: 0 12px 26px rgba(217, 76, 19, 0.24);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
 
   &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.shadow.md};
-    filter: brightness(1.02);
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px rgba(217, 76, 19, 0.3);
+    filter: saturate(1.08);
   }
 
   &:active:not(:disabled) {
@@ -320,23 +336,16 @@ export const SubmitButton = styled.button`
   }
 
   &:disabled {
-    opacity: 0.75;
-    cursor: not-allowed;
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.accent};
-    outline-offset: 3px;
+    opacity: 0.65;
   }
 `;
 
 export const LoginFooter = styled.div`
-  margin-top: ${({ theme }) => theme.spacing[5]};
-  padding-top: ${({ theme }) => theme.spacing[4]};
+  margin-top: 1.4rem;
+  padding-top: 1.1rem;
   border-top: 1px solid ${({ theme }) => theme.colors.border};
-
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.typography.sizes.xs};
-  line-height: ${({ theme }) => theme.typography.lineHeights.relaxed};
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: 0.68rem;
+  line-height: 1.5;
   text-align: center;
 `;

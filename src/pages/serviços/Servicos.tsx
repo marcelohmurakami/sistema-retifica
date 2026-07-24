@@ -4,7 +4,7 @@ import { ServicosFooter, ServicosHeader, ServicosTable } from "./ServicosStyled"
 import { Servico } from "../../components/Servico/Servico";
 import { useState } from "react";
 import { AddBtn } from "../../components/buttons/AddBtn";
-import { CreateClienteModal } from "../../components/createForms/CreateClienteModal";
+import { AppModal } from "../../components/modal/AppModal";
 import { CreateServico } from "../../components/createForms/CreateServico";
 import { LoadingContainer } from "../../components/spinner/LoadingContainer";
 import { useGetServicosWithPagination } from "../../components/createForms/useGetOs";
@@ -12,6 +12,7 @@ import { FooterInfo, PaginationButton, PaginationControls, SearchBox, SearchIcon
 import { PAGE_SIZE } from "../../utils/pageSize";
 import type { ServicoType } from "../../models/servico";
 import { useEmpresaAtual } from "../../components/empresas/useEmpresas";
+import { FaSearch } from "react-icons/fa";
 
 export function Servicos() {
   const { data: user } = useEmpresaAtual();
@@ -65,7 +66,7 @@ export function Servicos() {
     <MainContent>
       <SearchWrapper>
         <SearchBox>
-          <SearchIcon>🔎</SearchIcon>
+          <SearchIcon><FaSearch /></SearchIcon>
           <SearchInput
             type="text"
             placeholder="Buscar por serviço..."
@@ -82,7 +83,7 @@ export function Servicos() {
       </SearchWrapper>
 
       <ClientesStyled>
-        <ClientesInfos>Todos os serviços</ClientesInfos>
+        <ClientesInfos>Catálogo de serviços</ClientesInfos>
         <ClientesInfos>
           Ordenar por:{" "}
           <SelectStyled value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
@@ -154,9 +155,14 @@ export function Servicos() {
 
       {isAdmin && <AddBtn setIsCreateOpen={setIsOpen} novo="Cadastrar novo serviço" />}
 
-      <CreateClienteModal open={isOpen} onClose={() => setIsOpen(false)}>
-        <CreateServico servicoSelecionado={servicoSelecionado} />
-      </CreateClienteModal>
+      {isOpen && (
+        <AppModal open onClose={() => {
+          setIsOpen(false);
+          setServicoSelecionado(null);
+        }}>
+          <CreateServico key={servicoSelecionado?.id ?? "novo"} servicoSelecionado={servicoSelecionado} />
+        </AppModal>
+      )}
     </MainContent>
   );
 }

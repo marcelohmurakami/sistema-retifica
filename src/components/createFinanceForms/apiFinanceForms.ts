@@ -1,13 +1,31 @@
 import { supabase } from "../../services/supabaseApi";
 import { getEmpresaIdAtual } from "../empresas/empresasApi";
+import type { ContaPagar, ContaReceber, PagamentoQuitado, PagamentoRecebido } from "../../models/financeiro";
 
-type AccountsReceivablePayload = {
-  descricao: string;
-  valor: number;
-  valorRecebido: number;
-  dataPagamento: string;
-  status: string;
-  osId: number;
+export type AccountsReceivablePayload = Pick<
+  ContaReceber,
+  "descricao" | "valor" | "valorRecebido" | "dataPagamento" | "status" | "osId"
+>;
+
+export type AccountsPayableFormData = Pick<
+  ContaPagar,
+  "descricao" | "valor" | "valor_parcial_pago" | "dataVencimento" | "status" | "categoria"
+>;
+
+export type ReceivedPaymentFormData = Pick<
+  PagamentoRecebido,
+  "descricao" | "valor" | "metodoPag" | "taxaMaquina" | "dataRecebimento"
+> & {
+  idContaReceber?: number | null;
+  observacoes?: string;
+};
+
+export type PaidPaymentFormData = Pick<
+  PagamentoQuitado,
+  "descricao" | "valor" | "formaPagamento" | "dataPagamento"
+> & {
+  idContaPagar?: number | null;
+  observacoes?: string;
 };
 
 export async function createAccountsReceivable(
@@ -47,15 +65,6 @@ export async function updateAccountsReceivable(
   return result;
 }
 
-export type AccountsPayableFormData = {
-  descricao: string;
-  valor: number;
-  valor_parcial_pago?: number;
-  dataVencimento: string;
-  status: string;
-  categoria: string;
-};
-
 export async function createAccountsPayable(
   data: AccountsPayableFormData
 ) {
@@ -92,14 +101,6 @@ export async function updateAccountsPayable(
   return result;
 }
 
-export type ReceivedPaymentFormData = {
-  idPagamentoQuit: number | null;
-  valor: number;
-  dataPagamento: string;
-  formaPagamento: string;
-  observacoes: string;
-};
-
 export async function createReceivedPayment(
   data: ReceivedPaymentFormData
 ) {
@@ -135,18 +136,6 @@ export async function updateReceivedPayment(
 
   return result;
 }
-
-export type PaidPaymentFormData = {
-  idPagamentoQuit?: number | null;
-  idContaReceber?: number | null;
-  valor?: number | undefined;
-  formaPagamento?: string;
-  dataRecebimento?: string;
-  dataPagamento?: string | Date;
-  observacoes?: string;
-  metodoPag?: string;
-  taxaMaquina?: number;
-};
 
 export async function createPaidPayment(
   data: PaidPaymentFormData

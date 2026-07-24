@@ -4,10 +4,16 @@ import type { ServicoType } from "../../models/servico";
 
 import { getServicos, getServicosWithPagination } from "../../pages/serviços/servicosApi";
 import { EditOS, getItensOS, InsertOS } from "../../pages/ordensDeServico/osApi";
-import type { OSEditInput } from "./CreateOS";
+import type { ItemOS, OSEditInput } from "../../models/os";
 import toast from "react-hot-toast";
 import { getClientes } from "../../pages/clientes/clientesApi";
 import { useAuth } from "../../contexts/AuthContext";
+import type { Dispatch, SetStateAction } from "react";
+import type { UseFormReset } from "react-hook-form";
+import type { OSCreateInput } from "../../models/os";
+import type { ServicoAdicionado } from "../../pages/ordensDeServico/osApi";
+
+type ServicosResponse = { data: ServicoType[]; count: number };
 
 type ClientesResponse = {
   data: ClienteType[];
@@ -64,7 +70,7 @@ export function useGetServicosWithPagination(
     data,
     isLoading: isLoadingServicos,
     error,
-  } = useQuery<any>({
+  } = useQuery<ServicosResponse>({
     queryKey: ["servicos", "paginado", user?.id, sortBy, page, searchInput, tipo],
     enabled: !!user?.id,
     queryFn: () => getServicosWithPagination(sortBy, page, searchInput, tipo),
@@ -82,7 +88,7 @@ export function useGetItensOS(osSelecionada: OSEditInput) {
   const {
     data: itensDaOS = [],
     isLoading: isLoadingItensOS,
-  } = useQuery({
+  } = useQuery<ItemOS[]>({
     queryKey: ["itensOS", user?.id, osSelecionada?.id],
     queryFn: () => getItensOS(osSelecionada!.id),
     enabled: !!user?.id && !!osSelecionada?.id,
@@ -92,10 +98,8 @@ export function useGetItensOS(osSelecionada: OSEditInput) {
 }
 
 export function useInsertOS(
-  reset: any,
-  setServicosSelecionados: any,
-  setServicoSelecionado: any,
-  setQtdSelecionada: any
+  reset: UseFormReset<OSCreateInput>,
+  setServicosSelecionados: Dispatch<SetStateAction<ServicoAdicionado[]>>,
 ) {
   const queryClient = useQueryClient();
 
@@ -111,15 +115,15 @@ export function useInsertOS(
       queryClient.invalidateQueries({
         queryKey: ["itensOS"],
       });
+      queryClient.invalidateQueries({ queryKey: ["os"] });
+      queryClient.invalidateQueries({ queryKey: ["Estoque"] });
+      queryClient.invalidateQueries({ queryKey: ["relatorios"] });
 
       reset();
       setServicosSelecionados([]);
-      setServicoSelecionado(1);
-      setQtdSelecionada(1);
     },
-    onError: (error: any) => {
-    console.error("Erro ao criar OS:", error);
-    toast.error(error.message ?? "Não foi possível criar a ordem de serviço");
+    onError: (error: Error) => {
+    toast.error(error.message || "Não foi possível criar a ordem de serviço");
     },
       });
 
@@ -127,10 +131,8 @@ export function useInsertOS(
 }
 
 export function useEditOS(
-  reset: any,
-  setServicosSelecionados: any,
-  setServicoSelecionado: any,
-  setQtdSelecionada: any
+  reset: UseFormReset<OSCreateInput>,
+  setServicosSelecionados: Dispatch<SetStateAction<ServicoAdicionado[]>>,
 ) {
   const queryClient = useQueryClient();
 
@@ -146,11 +148,12 @@ export function useEditOS(
       queryClient.invalidateQueries({
         queryKey: ["itensOS"],
       });
+      queryClient.invalidateQueries({ queryKey: ["os"] });
+      queryClient.invalidateQueries({ queryKey: ["Estoque"] });
+      queryClient.invalidateQueries({ queryKey: ["relatorios"] });
 
       reset();
       setServicosSelecionados([]);
-      setServicoSelecionado(1);
-      setQtdSelecionada(1);
     },
     onError: () => toast.error("Não foi possível editar a ordem de serviço"),
   });

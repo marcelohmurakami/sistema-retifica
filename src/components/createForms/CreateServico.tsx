@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { ButtonContainer, Form, FormRow, Input, Label, SubmitButton } from "./CreateClienteStyled";
+import { ButtonContainer, Form, FormRow, Input, Label, SubmitButton } from "../ui/EntityFormStyled";
 import type { ServicoType } from "../../models/servico";
 import { LoadingContainer } from "../spinner/LoadingContainer";
 import { useInsertServicos } from "./useInsertServicos";

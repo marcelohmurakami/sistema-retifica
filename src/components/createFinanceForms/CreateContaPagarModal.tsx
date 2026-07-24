@@ -1,12 +1,13 @@
 import { BaseFinanceModal } from "./BaseFinanceModal";
-import { CancelButton, ErrorText, FieldGroup, Input, Label, Select, SubmitButton, Form } from "./ContaReceberModalStyled";
+import { CancelButton, ErrorText, FieldGroup, Input, Label, Select, SubmitButton, Form } from "../ui/FinanceFormStyled";
 import { useContasPagarForm } from "./useHooksFinanceForms";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import type { ContaPagar, FinanceStatus } from "../../models/financeiro";
 
 type CreateContaPagarModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  financaSelecionada?: any;
+  financaSelecionada?: ContaPagar | null;
 };
 
 export function CreateContaPagarModal({
@@ -15,29 +16,17 @@ export function CreateContaPagarModal({
   financaSelecionada,
 }: CreateContaPagarModalProps) {
     const hasId = Boolean(financaSelecionada);
-    console.log("Finança selecionada:", financaSelecionada);
-    const modalRef = useRef<HTMLDivElement>(null);
 
-    const [ descricao, setDescricao ] = useState("");
-    const [ valor, setValor ] = useState("");
-    const [ valorPago, setValorPago ] = useState("");
-    const [ dataVencimento, setDataVencimento ] = useState("");
-    const [ status, setStatus ] = useState("pendente");
-    const [ categoria, setCategoria ] = useState("");
+    const [ descricao, setDescricao ] = useState(financaSelecionada?.descricao ?? "");
+    const [ valor, setValor ] = useState(financaSelecionada ? String(financaSelecionada.valor) : "");
+    const [ valorPago, setValorPago ] = useState(financaSelecionada ? String(financaSelecionada.valor_parcial_pago) : "");
+    const [ dataVencimento, setDataVencimento ] = useState(financaSelecionada?.dataVencimento ?? "");
+    const [ status, setStatus ] = useState<FinanceStatus>(financaSelecionada?.status ?? "pendente");
+    const [ categoria, setCategoria ] = useState(financaSelecionada?.categoria ?? "");
 
     const { mutate, isPending, error } = useContasPagarForm();
 
-    function resetForm() {
-      setDescricao("");
-      setValor("");
-      setValorPago("");
-      setDataVencimento("");
-      setStatus("pendente");
-      setCategoria("");
-    }
-
     function handleClose() {
-      resetForm();
       onClose();
     }
 
@@ -48,6 +37,7 @@ export function CreateContaPagarModal({
       if (!valor || Number(valor) <= 0) return;
       if (!dataVencimento) return;
       if (!categoria.trim()) return;
+      if (Number(valorPago) < 0 || Number(valorPago) > Number(valor)) return;
 
       mutate(
         {
@@ -63,81 +53,37 @@ export function CreateContaPagarModal({
         },
         {
         onSuccess: () => {
-          handleClose();
+          onClose();
         }
       }
       )
     }
 
-    useEffect(() => {
-      if (!isOpen) return;
-
-      function handleKeyDown(e: KeyboardEvent) {
-        if (e.key === "Escape") {
-          handleClose();
-        }
-      }
-
-      window.addEventListener("keydown", handleKeyDown);
-
-      return () => {
-        window.removeEventListener("keydown", handleKeyDown);
-      };
-    }, [isOpen])
-
-    useEffect(() => {
-        if (financaSelecionada && isOpen) {
-          setDescricao(financaSelecionada.descricao || "");
-          setValor(
-            financaSelecionada.valor !== undefined
-              ? String(financaSelecionada.valor)
-              : ""
-          );
-          setValorPago(
-            financaSelecionada.valor_parcial_pago !== undefined
-              ? String(financaSelecionada.valor_parcial_pago)
-              : ""
-          );
-          setDataVencimento(financaSelecionada.dataVencimento || "");
-          setStatus(financaSelecionada.status || "pendente");
-        } else if (isOpen) {
-          resetForm();
-        }
-      }, [financaSelecionada, isOpen]);
-
-  function handleOverlayClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      handleClose();
-    }
-  }
-
     return (
-        <div onMouseDown={handleOverlayClick} ref={modalRef}>
-          <div onMouseDown={(e) => e.stopPropagation()}>
-            <BaseFinanceModal
-              isOpen={isOpen}
-              title={hasId ? "Editar conta a pagar" : "Nova conta a pagar"}
-              onClose={handleClose}
-              footer={
-                <>
-                  <CancelButton type="button" onClick={handleClose}>
-                    Cancelar
-                  </CancelButton>
-    
-                  <SubmitButton
-                    form="create-conta-pagar-form"
-                    type="submit"
-                    disabled={isPending}
-                  >
-                    {isPending
-                      ? "Salvando..."
-                      : hasId
-                      ? "Salvar alterações"
-                      : "Criar conta"}
-                  </SubmitButton>
-                </>
-              }
+      <BaseFinanceModal
+        isOpen={isOpen}
+        title={hasId ? "Editar conta a pagar" : "Nova conta a pagar"}
+        onClose={handleClose}
+        footer={
+          <>
+            <CancelButton type="button" onClick={handleClose}>
+              Cancelar
+            </CancelButton>
+
+            <SubmitButton
+              form="create-conta-pagar-form"
+              type="submit"
+              disabled={isPending}
             >
+              {isPending
+                ? "Salvando..."
+                : hasId
+                ? "Salvar alterações"
+                : "Criar conta"}
+            </SubmitButton>
+          </>
+        }
+      >
               <Form id="create-conta-pagar-form" onSubmit={handleSubmit}>
                 <FieldGroup>
                   <Label htmlFor="descricao">Descrição</Label>
@@ -156,6 +102,8 @@ export function CreateContaPagarModal({
                     id="valor"
                     type="number"
                     step="0.01"
+                    min="0"
+                    max={valor || undefined}
                     placeholder="0,00"
                     value={valor}
                     onChange={(e) => setValor(e.target.value)}
@@ -182,7 +130,7 @@ export function CreateContaPagarModal({
                     step="0.01"
                     placeholder="0,00"
                     readOnly
-                    value={valor && valorPago ? (Number(valor) - Number(valorPago)).toFixed(2) : ""}
+                    value={valor ? Math.max(Number(valor) - Number(valorPago || 0), 0).toFixed(2) : ""}
                   />
                 </FieldGroup>
     
@@ -201,7 +149,7 @@ export function CreateContaPagarModal({
                   <Select
                     id="status"
                     value={status}
-                    onChange={(e) => setStatus(e.target.value)}
+                    onChange={(e) => setStatus(e.target.value as FinanceStatus)}
                   >
                     <option value="pendente">Pendente</option>
                     <option value="parcial">Parcial</option>
@@ -223,8 +171,6 @@ export function CreateContaPagarModal({
     
                 {error && <ErrorText>{error.message}</ErrorText>}
               </Form>
-            </BaseFinanceModal>
-          </div>
-        </div>
+      </BaseFinanceModal>
       );
 }

@@ -1,7 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { EditOrcamento, getOrcamentoById, GetOrcamentos, InsertOrcamento, updateSituacaoOrcamento } from "../../pages/orcamentos/Orcamento";
+import { EditOrcamento, GetOrcamentos, InsertOrcamento, updateSituacaoOrcamento } from "../../pages/orcamentos/Orcamento";
 import toast from "react-hot-toast";
 import { useAuth } from "../../contexts/AuthContext";
+import type { UseFormReset } from "react-hook-form";
+import type { OrcamentoFormData, OrcamentoType } from "../../models/orcamento";
+
+type OrcamentosResponse = { data: OrcamentoType[]; count: number };
 
 export function useGetOrcamentos(
   sortBy: string,
@@ -14,7 +18,7 @@ export function useGetOrcamentos(
     data,
     isLoading: isLoadingOrcamentos,
     error,
-  } = useQuery<any>({
+  } = useQuery<OrcamentosResponse>({
     queryKey: ["Orcamentos", "lista", user?.id, sortBy, page, searchInput],
     enabled: !!user?.id,
     queryFn: () => GetOrcamentos(sortBy, page, searchInput),
@@ -26,32 +30,12 @@ export function useGetOrcamentos(
   return { orcamentos, isLoadingOrcamentos, error, count };
 }
 
-export function useGetOrcamentoById(id: number) {
-  const { user } = useAuth();
-
-  const {
-    data,
-    isLoading: isLoadingOrcamento,
-    error,
-  } = useQuery({
-    queryKey: ["Orcamentos", "detalhe", user?.id, id],
-    queryFn: () => getOrcamentoById(id),
-    enabled: !!user?.id && !!id,
-  });
-
-  const orcamento = data?.data;
-  const count = data?.count;
-
-  return { orcamento, isLoadingOrcamento, error, count };
-}
-
 export function useInsertOrcamentos() {
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
     mutationFn: InsertOrcamento,
-    onSuccess: (data) => {
-      console.log("SUCCESS:", data);
+    onSuccess: () => {
       toast.success("Orçamento criado com sucesso!");
 
       queryClient.invalidateQueries({
@@ -59,8 +43,7 @@ export function useInsertOrcamentos() {
       });
     },
 
-    onError: (error) => {
-      console.log("ERROR:", error);
+    onError: () => {
       toast.error("Não foi possível criar o orçamento");
     },
   });
@@ -69,8 +52,8 @@ export function useInsertOrcamentos() {
 }
 
 export function useEditOrcamento(
-  reset: any,
-  setIsCreateOpen: React.Dispatch<React.SetStateAction<boolean>>
+  reset: UseFormReset<OrcamentoFormData>,
+  setIsCreateOpen?: React.Dispatch<React.SetStateAction<boolean>>
 ) {
   const queryClient = useQueryClient();
 
@@ -87,7 +70,7 @@ export function useEditOrcamento(
       });
 
       reset();
-      setIsCreateOpen(false);
+      setIsCreateOpen?.(false);
     },
     onError: () => toast.error("Não foi possível editar o orçamento"),
   });
