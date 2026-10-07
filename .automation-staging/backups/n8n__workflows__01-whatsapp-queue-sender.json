@@ -1,0 +1,174 @@
+{
+  "name": "Murakami - WhatsApp - Processar fila",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [{ "field": "minutes", "minutesInterval": 1 }] } },
+      "id": "64f27280-6f45-45bb-9bcf-4777fbec9046",
+      "name": "A cada minuto",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-1000, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL.replace(/\\\/$/, '') + '/rest/v1/rpc/n8n_reservar_mensagens_whatsapp' }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Content-Type", "value": "application/json" }
+        ] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ p_limite: Number($env.N8N_QUEUE_BATCH_SIZE || 5) }) }}",
+        "options": {}
+      },
+      "id": "81f271cc-2ed1-41fc-ac55-f386e9197592",
+      "name": "Reservar mensagens WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-780, 0]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const received = $input.all().map((item) => item.json);\nconst rows = received.flatMap((value) => Array.isArray(value) ? value : [value]);\nreturn rows.filter((row) => row && row.id).map((row) => ({ json: row }));"
+      },
+      "id": "b9d4e113-0c51-427f-af3a-96f1f150b14e",
+      "name": "Separar lote",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-560, 0]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const queue = $json;\nconst digits = String(queue.destinatario ?? '').replace(/\\D/g, '');\nconst instance = String(queue.dados_template?.instancia_evolution ?? '');\nconst expected = String($env.EVOLUTION_INSTANCE || 'estudos-whatsapp');\nlet validationError = '';\nif (queue.canal !== 'whatsapp') validationError = 'Item reservado com canal diferente de WhatsApp.';\nelse if (!/^\\d{10,15}$/.test(digits)) validationError = 'Telefone WhatsApp invalido.';\nelse if (!instance || instance !== expected) validationError = 'Instancia Evolution divergente da instancia autorizada.';\nelse if (!String(queue.conteudo ?? '').trim()) validationError = 'Mensagem vazia.';\nreturn { json: { queue: { ...queue, destinatario: digits }, valid: !validationError, validationError } };"
+      },
+      "id": "f8878e1e-af95-4c08-af09-875e89c04140",
+      "name": "Preparar envio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-340, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [{ "id": "86758849-4f2d-4a8a-a60c-f1fb608374db", "leftValue": "={{ $json.valid }}", "rightValue": "", "operator": { "type": "boolean", "operation": "true", "singleValue": true } }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2abc2e3c-e9e2-4185-9913-76b17fe72c53",
+      "name": "Item valido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-100, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.EVOLUTION_API_URL.replace(/\\\/$/, '') + '/message/sendText/' + encodeURIComponent($json.queue.dados_template.instancia_evolution) }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey", "value": "={{ $env.EVOLUTION_API_KEY }}" },
+          { "name": "Content-Type", "value": "application/json" }
+        ] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ number: $json.queue.destinatario, text: $json.queue.conteudo, delay: Number($env.EVOLUTION_SEND_DELAY_MS || 1200), linkPreview: true }) }}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "ce7a445e-d579-42f0-9663-c36eb1ec13cc",
+      "name": "Enviar pela Evolution",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [140, -100],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL.replace(/\\\/$/, '') + '/rest/v1/rpc/n8n_registrar_resultado_mensagem' }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Content-Type", "value": "application/json" }
+        ] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ p_id_mensagem: $('Preparar envio').item.json.queue.id, p_status: 'enviada', p_identificador_externo: String($json.key?.id || $json.messageId || $json.id || '') || null, p_erro: null }) }}",
+        "options": {}
+      },
+      "id": "77cda030-59ce-451c-bd9a-0cec6c9e0c06",
+      "name": "Registrar enviada",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, -180]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL.replace(/\\\/$/, '') + '/rest/v1/rpc/n8n_registrar_resultado_mensagem' }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Content-Type", "value": "application/json" }
+        ] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ p_id_mensagem: $('Preparar envio').item.json.queue.id, p_status: 'erro', p_identificador_externo: null, p_erro: String($json.error?.message || $json.message || 'Falha na Evolution API.').slice(0, 1000) }) }}",
+        "options": {}
+      },
+      "id": "37c6950a-a1ad-4c23-8f61-6ff29f1dfa99",
+      "name": "Registrar falha de envio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, -20]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL.replace(/\\\/$/, '') + '/rest/v1/rpc/n8n_registrar_resultado_mensagem' }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Content-Type", "value": "application/json" }
+        ] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ p_id_mensagem: $json.queue.id, p_status: 'erro', p_identificador_externo: null, p_erro: $json.validationError }) }}",
+        "options": {}
+      },
+      "id": "b622d7c7-8d8d-4d8e-8afc-30ef80d3b7e4",
+      "name": "Registrar item bloqueado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [140, 120]
+    }
+  ],
+  "connections": {
+    "A cada minuto": { "main": [[{ "node": "Reservar mensagens WhatsApp", "type": "main", "index": 0 }]] },
+    "Reservar mensagens WhatsApp": { "main": [[{ "node": "Separar lote", "type": "main", "index": 0 }]] },
+    "Separar lote": { "main": [[{ "node": "Preparar envio", "type": "main", "index": 0 }]] },
+    "Preparar envio": { "main": [[{ "node": "Item valido?", "type": "main", "index": 0 }]] },
+    "Item valido?": { "main": [[{ "node": "Enviar pela Evolution", "type": "main", "index": 0 }], [{ "node": "Registrar item bloqueado", "type": "main", "index": 0 }]] },
+    "Enviar pela Evolution": { "main": [[{ "node": "Registrar enviada", "type": "main", "index": 0 }], [{ "node": "Registrar falha de envio", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1", "timezone": "America/Sao_Paulo", "saveDataErrorExecution": "none", "saveDataSuccessExecution": "none", "saveExecutionProgress": false },
+  "versionId": "30a3a758-6be8-44e9-a5f0-2da489467d2d",
+  "meta": { "templateCredsSetupCompleted": false },
+  "tags": []
+}

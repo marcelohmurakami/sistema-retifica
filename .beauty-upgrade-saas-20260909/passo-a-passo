@@ -1,0 +1,188 @@
+Fase 1 — Fundação
+1. Configurar variáveis de ambiente;  OK
+2. Instalar e configurar o Supabase; OK
+3. Gerar os tipos TypeScript do banco; OK
+4. Criar organização de pastas; OK
+5. Criar camada de consultas e tratamento de erros; OK
+6. Configurar Toast, Loading e Error Boundary. OK
+
+
+Fase 2 — Autenticação
+7. Conectar a tela de login ao Supabase; OK
+8. Manter a sessão do usuário; OK
+9. Criar logout; OK
+10. Criar recuperação e alteração de senha;OK
+11. Proteger as rotas internas; OK
+12. Redirecionar usuários não autenticados; OK
+13. Vincular auth.users com usuarios_empresas. OK
+
+
+
+Fase 3 — Empresa, plano e permissões
+14. Carregar a empresa atual; OK
+15. Permitir trocar de empresa, caso o usuário tenha mais de uma; ADIADO (personalização sob demanda)
+16. Carregar a assinatura atual; OK
+17. Identificar o plano; OK
+18. Carregar as permissões de permissoes_planos; OK
+19. Carregar o cargo do usuário; OK
+20. Criar o AccessProvider; OK
+21. Criar o hook useAccess; OK
+22. Criar o componente FeatureRoute; OK
+23. Criar proteção de rotas por plano e cargo; OK
+24. Filtrar o menu lateral; OK
+25. Criar telas para recurso restrito e assinatura bloqueada; OK
+Essa etapa precisa estar pronta antes dos módulos para já testarmos cada página com Básico, Lite e Completo.
+
+
+
+Fase 4 — Componentes reutilizáveis
+26. Modal; OK
+27. Confirmação de exclusão; OK
+28. Formulários; OK
+29. Máscaras para telefone, CPF, CNPJ e dinheiro; OK
+30. Tabela; OK
+31. Paginação; OK
+32. Busca e filtros; OK
+33. Loading e skeleton; OK
+34. Estado vazio; OK
+35. Tratamento de erro; OK
+36. Upload de arquivos; OK
+37. Seletor de datas e horários. OK
+
+
+
+Fase 5 — Primeiro módulo completo
+Serviços
+38. Listagem real; OK
+39. Cadastro; OK
+40. Edição; OK
+41. Ativação e desativação; OK
+42. Preço e duração; OK
+43. Busca e filtros; OK
+44. Paginação; OK
+45. Permissão pelo plano; OK
+46. Permissão pelo cargo; OK
+47. Responsividade; OK
+48. Testes. OK
+Serviços será o módulo modelo para os seguintes.
+
+
+
+Fase 6 — Cadastros essenciais
+49. Clientes; OK
+50. Consentimentos de comunicação; OK
+51. Funcionários; OK
+52. Jornada dos funcionários; OK
+53. Ausências e bloqueios; OK
+54. Serviços executados por cada funcionário. OK
+
+
+
+Fase 7 — Agenda
+55. Calendário diário; OK
+56. Calendário semanal; OK
+57. Calendário mensal; OK
+58. Criar agendamento; OK
+59. Editar e reagendar; OK
+60. Confirmar; OK
+61. Cancelar; OK
+62. Marcar não comparecimento; OK
+63. Iniciar e finalizar atendimento; OK
+64. Bloquear conflitos de horário; OK
+65. Filtrar por funcionário; OK
+66. Diferenciar agendamento simples e completo por plano. OK
+Nesse ponto, o núcleo principal do sistema já estará funcionando.
+
+
+
+Fase 8 — Produtos e estoque
+67. Produtos;OK
+68. Fornecedores;OK
+69. Compras;OK
+70. Itens das compras;OK
+71. Entrada de estoque;OK
+72. Saída e ajuste;OK
+73. Estoque mínimo;OK
+74. Alertas.OK
+
+
+Fase 9 — Atendimento comercial
+75. Orçamentos;OK
+76. Itens do orçamento;OK
+77. Aprovação;OK
+78. Conversão do orçamento;OK
+79. Comandas;OK
+80. Produtos e serviços na comanda;OK
+81. Descontos;OK
+82. Fechamento e cancelamento.OK
+
+
+Fase 10 — Financeiro
+83. Categorias financeiras;OK
+84. Contas a pagar e receber;OK
+85. Parcelas;OK
+86. Formas de pagamento;OK
+87. Pagamentos;OK
+88. Sessões de caixa;OK
+89. Abertura e fechamento;OK
+90. Sangria e suprimento;OK
+91. Estornos;OK
+92. Relatórios financeiros.OK
+
+
+Fase 11 — Comissões
+93. Regras;OK
+94. Lançamentos;OK
+95. Comissões previstas;OK
+96. Comissões liberadas;OK
+97. Pagamentos;OK
+98. Estornos e ajustes;OK
+99. Relatório por funcionário.OK
+
+
+
+Fase 12 — Administração
+100. Histórico e auditoria; OK
+101. Configurações da empresa; OK
+102. Usuários; OK
+103. Cargos e permissões; OK
+104. Plano e assinatu ra; OK
+105. Integrações;OK
+106. Personalização visual.OK
+
+
+Fase 14 — Dashboard e relatórios
+114. Indicadores reais; OK
+115. Agenda do dia; OK
+116. Faturamento; OK
+117. Taxa de ocupação; OK
+118. Clientes novos; OK
+119. Serviços mais vendidos; OK
+120. Desempenho dos funcionários; OK
+121. Estoque baixo; OK
+122. Contas próximas do vencimento. OK
+O dashboard fica perto do final porque depende dos outros módulos para apresentar dados reais.
+
+
+Fase 13 — Recursos do plano Completo
+107. Agendamento feito pelo cliente;
+108. Página pública da empresa;
+109. Confirmação pelo cliente;
+110. Cancelamento e reagendamento;
+111. Pagamento de sinal;
+112. Lembretes automáticos;
+113. Área do cliente.
+
+
+Fase 15 — Preparação para lançamento
+123. Cobrança das assinaturas;
+124. Upgrade e downgrade;
+125. Período de teste;
+126. Limites por plano;
+127. Testes com Básico, Lite e Completo;
+128. Testes com todos os cargos;
+129. Testes de segurança e RLS;
+130. Testes em celular, tablet e desktop;
+131. Política de privacidade e LGPD;
+132. Backup e monitoramento;
+133. Deploy de produção.

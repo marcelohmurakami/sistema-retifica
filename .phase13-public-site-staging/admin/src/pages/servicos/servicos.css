@@ -1,0 +1,166 @@
+.services-page { gap: var(--space-6); }
+
+.services-read-only {
+  display: inline-flex;
+  min-height: 2.65rem;
+  align-items: center;
+  gap: var(--space-2);
+  padding-inline: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-subtle);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+.services-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.service-metric-card {
+  display: grid;
+  min-height: 5.5rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: center;
+  align-items: center;
+  column-gap: var(--space-4);
+  row-gap: var(--space-1);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.service-metric-card__label,
+.service-metric-card__detail { color: var(--text-muted); }
+.service-metric-card__label { grid-column: 1; grid-row: 1; font-size: var(--text-sm); }
+.service-metric-card__detail { grid-column: 1; grid-row: 2; }
+.service-metric-card__value,
+.service-metric-card__value-skeleton {
+  grid-column: 2;
+  grid-row: 1 / 3;
+}
+.service-metric-card__value {
+  color: var(--text);
+  font-size: var(--text-xl);
+  line-height: 1;
+}
+.service-metric-card--plan { background: var(--primary-subtle); }
+.service-metric-card--plan .service-metric-card__value { color: var(--primary); font-size: var(--text-lg); }
+
+.services-limit-alert { margin: var(--space-10) 0 0; }
+.services-list-card { overflow: hidden; margin-top: var(--space-10); padding: 0; }
+.services-list-card .table-container { border: 0; border-radius: 0; }
+.services-list-card .pagination { padding-inline: var(--space-4); }
+
+.services-refreshing {
+  height: 0;
+  color: var(--primary);
+  font-size: var(--text-xs);
+  font-weight: 650;
+  text-align: center;
+  transform: translateY(0.25rem);
+}
+
+.services-filter-select {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.services-filter-select > span { color: var(--text-muted); font-size: var(--text-xs); }
+.services-filter-select select { width: auto; min-width: 7rem; min-height: 2.5rem; padding-block: var(--space-2); }
+.services-filter-select--size select { min-width: 4.5rem; }
+
+.service-name-cell { display: grid; max-width: 28rem; gap: var(--space-1); }
+.service-name-cell strong { color: var(--text); }
+.service-name-cell span {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.service-duration { display: grid; gap: 0.15rem; }
+.service-duration small { color: var(--text-muted); }
+.service-online { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--success); font-size: var(--text-sm); font-weight: 650; }
+.service-actions { display: flex; justify-content: flex-end; gap: var(--space-1); }
+.service-actions .btn { width: 2.3rem; min-height: 2.3rem; }
+.service-action--danger:hover:not(:disabled) { background: var(--danger-surface); color: var(--danger); }
+.service-action--success:hover:not(:disabled) { background: var(--success-surface); color: var(--success); }
+.service-row--inactive { opacity: 0.7; }
+.text-muted { color: var(--text-muted); }
+
+.services-mobile-list { display: none; }
+
+.service-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+.service-form .field--full { grid-column: 1 / -1; }
+.service-form__options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-subtle);
+}
+.service-form__signal { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.modal__footer .form-actions { width: 100%; padding: 0; }
+
+@media (max-width: 68rem) {
+  .services-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .service-form__options { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 48rem) {
+  .services-page { gap: var(--space-4); }
+  .services-limit-alert,
+  .services-list-card { margin-top: var(--space-6); }
+  .services-desktop-list.has-data { display: none; }
+  .services-mobile-list { display: grid; gap: var(--space-3); padding: var(--space-4); }
+  .service-mobile-card {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+  }
+  .service-mobile-card[data-inactive="true"] { opacity: 0.72; }
+  .service-mobile-card header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+  .service-mobile-card header > div { display: grid; gap: var(--space-1); }
+  .service-mobile-card header strong { color: var(--text); font-size: var(--text-base); }
+  .service-mobile-card header span:not(.badge) { color: var(--primary); font-weight: 700; }
+  .service-mobile-card p { color: var(--text-muted); font-size: var(--text-sm); }
+  .service-mobile-card dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
+  .service-mobile-card dl > div { display: grid; gap: 0.2rem; }
+  .service-mobile-card dt { color: var(--text-muted); font-size: var(--text-xs); }
+  .service-mobile-card dd { color: var(--text); font-size: var(--text-sm); font-weight: 650; }
+  .service-mobile-card footer { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+  .service-form,
+  .service-form__signal { grid-template-columns: 1fr; }
+  .service-form > *,
+  .service-form__signal > * { grid-column: 1; }
+}
+
+@media (max-width: 32rem) {
+  .services-metrics { grid-template-columns: 1fr 1fr; }
+  .service-metric-card {
+    min-height: 5.75rem;
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    padding: var(--space-3) var(--space-4);
+  }
+  .service-metric-card__value,
+  .service-metric-card__value-skeleton { grid-column: 1; grid-row: 2; }
+  .service-metric-card__detail { display: none; }
+  .services-filter-select { width: 100%; justify-content: space-between; }
+  .services-filter-select select { flex: 1; }
+  .service-mobile-card dl { grid-template-columns: 1fr 1fr; }
+  .service-mobile-card footer { grid-template-columns: 1fr; }
+}

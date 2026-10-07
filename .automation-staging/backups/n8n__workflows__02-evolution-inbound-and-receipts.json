@@ -1,0 +1,222 @@
+{
+  "name": "Murakami - Evolution - Entrada e recibos",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "evolution-whatsapp-REPLACE_WITH_32_RANDOM_CHARS",
+        "options": { "responseCode": 200 }
+      },
+      "id": "946cce27-d9a4-4c17-b2b6-24664ddfb91b",
+      "name": "Webhook Evolution",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-1120, 0],
+      "webhookId": "39a69ac7-6a39-4e39-939f-97c311c6e5f7"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const envelope = $input.first().json ?? {};\nconst headers = envelope.headers ?? {};\nconst expectedSecret = String($env.EVOLUTION_WEBHOOK_SECRET || '');\nconst suppliedHeader = String(headers['x-webhook-secret'] || headers['X-Webhook-Secret'] || '');\nlet pathIsValid = false;\ntry {\n  const pathname = new URL(String(envelope.webhookUrl || '')).pathname;\n  pathIsValid = pathname.endsWith('/evolution-whatsapp-' + expectedSecret);\n} catch {}\nif (!expectedSecret || (suppliedHeader !== expectedSecret && !pathIsValid)) {\n  return [{ json: { route: 'unauthorized', accepted: false } }];\n}\nconst payload = envelope.body && typeof envelope.body === 'object' ? envelope.body : envelope;\nconst instanceName = String(payload.instance || payload.instanceName || '');\nconst expectedInstance = String($env.EVOLUTION_INSTANCE || 'estudos-whatsapp');\nif (instanceName !== expectedInstance) {\n  return [{ json: { route: 'ignored', accepted: false, reason: 'instance_mismatch' } }];\n}\nconst event = String(payload.event || '').trim().toUpperCase().replace(/[.-]/g, '_');\nconst dataList = Array.isArray(payload.data) ? payload.data : [payload.data ?? {}];\nconst output = [];\nfor (const entry of dataList) {\n  const key = entry?.key ?? entry?.message?.key ?? {};\n  const message = entry?.message ?? entry ?? {};\n  const remoteCandidates = [key.remoteJidAlt, key.remoteJid, entry?.sender, payload.sender].map((v) => String(v || ''));\n  const remoteJid = remoteCandidates.find((v) => /@s\\.whatsapp\\.net$/.test(v)) || remoteCandidates.find(Boolean) || '';\n  const externalId = String(key.id || entry?.messageId || entry?.id || '');\n  if (event === 'MESSAGES_UPSERT' || event === 'MESSAGE_UPSERT') {\n    const text = String(message.conversation || message.extendedTextMessage?.text || message.imageMessage?.caption || message.videoMessage?.caption || message.buttonsResponseMessage?.selectedDisplayText || message.listResponseMessage?.singleSelectReply?.selectedRowId || '').trim();\n    output.push({ json: { route: 'message', companyId: Number($env.WHATSAPP_COMPANY_ID || 10), instanceName, messageId: externalId, phone: remoteJid.split('@')[0].replace(/\\D/g, ''), text, fromMe: Boolean(key.fromMe), isGroup: remoteJid.endsWith('@g.us') } });\n    continue;\n  }\n  if (event === 'MESSAGES_UPDATE' || event === 'MESSAGE_UPDATE' || event === 'SEND_MESSAGE') {\n    const rawStatus = entry?.update?.status ?? entry?.status ?? message?.status;\n    const normalized = String(rawStatus ?? '').toUpperCase();\n    const numeric = Number(rawStatus);\n    let deliveryStatus = '';\n    if (normalized === 'READ' || normalized === 'PLAYED' || numeric === 4 || numeric === 5) deliveryStatus = 'lida';\n    else if (normalized === 'DELIVERY_ACK' || normalized === 'DELIVERED' || numeric === 3) deliveryStatus = 'entregue';\n    else if (normalized === 'SERVER_ACK' || normalized === 'SENT' || numeric === 2) deliveryStatus = 'enviada';\n    else if (normalized === 'ERROR' || normalized === 'FAILED' || numeric === 0) deliveryStatus = 'erro';\n    if (externalId && deliveryStatus) output.push({ json: { route: 'receipt', companyId: Number($env.WHATSAPP_COMPANY_ID || 10), instanceName, externalId, deliveryStatus } });\n  }\n}\nreturn output.length ? output : [{ json: { route: 'ignored', accepted: true } }];"
+      },
+      "id": "715752d7-834d-4d15-8be9-e2e54597d22e",
+      "name": "Validar e normalizar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-900, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [{ "id": "d599cbca-48d4-47ee-9320-61d893b06e9e", "leftValue": "={{ $json.route }}", "rightValue": "message", "operator": { "type": "string", "operation": "equals" } }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7b87f728-50e1-4fc0-84a6-c2f95620c55a",
+      "name": "Mensagem recebida?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-660, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL.replace(/\\\/$/, '') + '/functions/v1/whatsapp-bot' }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Content-Type", "value": "application/json" }
+        ] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ companyId: $json.companyId, instanceName: $json.instanceName, messageId: $json.messageId, phone: $json.phone, text: $json.text, fromMe: $json.fromMe, isGroup: $json.isGroup }) }}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "2f7f9047-9d1e-4256-b673-8d515f02b72b",
+      "name": "Consultar chatbot seguro",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-420, -180],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [{ "id": "c14886a2-e606-47c2-b013-cf93236323ee", "leftValue": "={{ typeof $json.message === 'string' && $json.message.trim().length > 0 }}", "rightValue": "", "operator": { "type": "boolean", "operation": "true", "singleValue": true } }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "66888a8c-32f3-4a7c-83e0-ab3397fb9222",
+      "name": "Tem resposta?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-180, -180]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.EVOLUTION_API_URL.replace(/\\\/$/, '') + '/message/sendText/' + encodeURIComponent($env.EVOLUTION_INSTANCE || 'estudos-whatsapp') }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey", "value": "={{ $env.EVOLUTION_API_KEY }}" },
+          { "name": "Content-Type", "value": "application/json" }
+        ] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ number: String($json.phone).replace(/\\D/g, ''), text: $json.message, delay: Number($env.EVOLUTION_SEND_DELAY_MS || 1200), linkPreview: true }) }}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "28228ce5-888d-46d1-a45a-201171a87d97",
+      "name": "Responder pelo numero novo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [60, -220],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [{ "id": "1b07dd9d-aa1a-46c5-8e27-1101f49fa85d", "leftValue": "={{ $json.route }}", "rightValue": "receipt", "operator": { "type": "string", "operation": "equals" } }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "041987a1-e4f5-42d1-82a0-899399da4998",
+      "name": "Recibo de entrega?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-420, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL.replace(/\\\/$/, '') + '/rest/v1/rpc/n8n_registrar_evento_evolution' }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Content-Type", "value": "application/json" }
+        ] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ p_id_empresa: $json.companyId, p_instancia_evolution: $json.instanceName, p_identificador_externo: $json.externalId, p_evento: 'DELIVERY_' + $json.deliveryStatus.toUpperCase(), p_payload: { status: $json.deliveryStatus }, p_assinatura_valida: true }) }}",
+        "options": {}
+      },
+      "id": "e1c7007b-8991-46a6-9b89-21a376496ee5",
+      "name": "Deduplicar recibo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-180, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [{ "id": "516948f0-9fe0-4199-949c-b3f64b16889d", "leftValue": "={{ $json.accepted === true && $json.duplicated !== true }}", "rightValue": "", "operator": { "type": "boolean", "operation": "true", "singleValue": true } }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "729fab38-d410-4dba-8b32-f45792859ed4",
+      "name": "Recibo novo e aceito?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [60, 100]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.SUPABASE_URL.replace(/\\\/$/, '') + '/rest/v1/fila_mensagens?select=id&id_empresa=eq.' + encodeURIComponent(String($env.WHATSAPP_COMPANY_ID || 10)) + '&identificador_externo=eq.' + encodeURIComponent($('Validar e normalizar').item.json.externalId) + '&limit=1' }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" }
+        ] },
+        "options": {}
+      },
+      "id": "0206ee2b-f464-432f-8cb9-99f45a3862e4",
+      "name": "Localizar mensagem enviada",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [300, 100]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const received = $input.all().map((item) => item.json);\nconst rows = received.flatMap((value) => Array.isArray(value) ? value : (Array.isArray(value?.body) ? value.body : [value]));\nconst row = rows.find((item) => item && item.id);\nif (!row) return [];\nreturn [{ json: { queueId: row.id, status: $('Validar e normalizar').item.json.deliveryStatus } }];"
+      },
+      "id": "b2d93a9b-44ef-47b3-a40f-0e7d1473150f",
+      "name": "Preparar atualizacao do recibo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [540, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL.replace(/\\\/$/, '') + '/rest/v1/rpc/n8n_registrar_resultado_mensagem' }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+          { "name": "Content-Type", "value": "application/json" }
+        ] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ p_id_mensagem: $json.queueId, p_status: $json.status, p_identificador_externo: $('Validar e normalizar').item.json.externalId, p_erro: $json.status === 'erro' ? 'Falha informada pela Evolution.' : null }) }}",
+        "options": {}
+      },
+      "id": "2d36c11d-f4e0-4143-a2d4-6ee379880ad2",
+      "name": "Atualizar entrega ou leitura",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [780, 100]
+    }
+  ],
+  "connections": {
+    "Webhook Evolution": { "main": [[{ "node": "Validar e normalizar", "type": "main", "index": 0 }]] },
+    "Validar e normalizar": { "main": [[{ "node": "Mensagem recebida?", "type": "main", "index": 0 }]] },
+    "Mensagem recebida?": { "main": [[{ "node": "Consultar chatbot seguro", "type": "main", "index": 0 }], [{ "node": "Recibo de entrega?", "type": "main", "index": 0 }]] },
+    "Consultar chatbot seguro": { "main": [[{ "node": "Tem resposta?", "type": "main", "index": 0 }]] },
+    "Tem resposta?": { "main": [[{ "node": "Responder pelo numero novo", "type": "main", "index": 0 }], []] },
+    "Recibo de entrega?": { "main": [[{ "node": "Deduplicar recibo", "type": "main", "index": 0 }], []] },
+    "Deduplicar recibo": { "main": [[{ "node": "Recibo novo e aceito?", "type": "main", "index": 0 }]] },
+    "Recibo novo e aceito?": { "main": [[{ "node": "Localizar mensagem enviada", "type": "main", "index": 0 }], []] },
+    "Localizar mensagem enviada": { "main": [[{ "node": "Preparar atualizacao do recibo", "type": "main", "index": 0 }]] },
+    "Preparar atualizacao do recibo": { "main": [[{ "node": "Atualizar entrega ou leitura", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1", "timezone": "America/Sao_Paulo", "saveDataErrorExecution": "none", "saveDataSuccessExecution": "none", "saveExecutionProgress": false },
+  "versionId": "4d75979d-9f3d-4f47-83be-1b3ce1d0aa6c",
+  "meta": { "templateCredsSetupCompleted": false },
+  "tags": []
+}

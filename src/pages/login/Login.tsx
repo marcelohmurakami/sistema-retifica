@@ -77,14 +77,14 @@ export function Login() {
         <BrandOverlay />
         <BrandContent>
           <LogoStyled src="/images/logoPng512.png" alt="Logo da retífica" />
-          <BrandBadge>GESTÃO INDUSTRIAL DE ALTO NÍVEL</BrandBadge>
+          <BrandBadge>GESTÃO AUTOMOTIVA DE ALTO NÍVEL</BrandBadge>
 
           <BrandTitle>
-            Gestão mais rápida,
+            Orisson é gay,
             <br />
-            visual mais profissional
+            nosso depósito de porra
             <br />
-            para a sua <BrandHighlight>retífica</BrandHighlight>.
+            e esperma <BrandHighlight>favorito</BrandHighlight>.
           </BrandTitle>
 
           <BrandDescription>
